@@ -1,0 +1,48 @@
+name: Python lint
+
+# Cheap guard on the Colab pipeline and converter scripts: syntax check
+# plus CLI smoke test. Deep functional testing is manual (see docs), this
+# only catches "broke the file" regressions.
+
+on:
+  push:
+    paths:
+      - "colab/**"
+      - "scripts/**"
+      - ".github/workflows/python-ci.yml"
+  pull_request:
+    paths:
+      - "colab/**"
+      - "scripts/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Compile & smoke-test scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Pillow (only dependency the CLIs need at import time)
+        run: pip install Pillow
+
+      - name: Byte-compile all Python files
+        run: |
+          python -m py_compile scripts/*.py
+          python -m py_compile colab/*.py
+
+      - name: CLI smoke tests
+        run: |
+          python scripts/cvat_xml_to_labelme.py --help
+          python scripts/labelme_to_yolo.py --help
