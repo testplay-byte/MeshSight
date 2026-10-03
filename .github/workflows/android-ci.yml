@@ -1,8 +1,8 @@
 name: Android CI
 
-# Builds the MeshSight APK on GitHub's runners — no heavy compilation
-# is needed on your local machine. Runs on pushes/PRs that touch the
-# android/ folder, and on manual dispatch.
+# Builds the MeshSight debug APK on GitHub runners (nothing is compiled
+# locally) and publishes it as a rolling GitHub Release with both the raw
+# APK and a compressed ZIP asset.
 
 on:
   push:
@@ -15,11 +15,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
-    name: Debug + Release APK
+    name: Debug APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -44,22 +44,36 @@ jobs:
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
 
-      - name: Assemble release APK
-        working-directory: android
-        # Debug signing for the unsigned release; add real signing secrets
-        # (see docs/06-android-app.md) before distributing publicly.
-        run: ./gradlew --no-daemon assembleRelease
+      - name: Stage release assets
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/MeshSight-debug.apk
+          cd release && zip -9 MeshSight-debug.zip MeshSight-debug.apk
 
-      - name: Upload debug APK
+      - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: meshsight-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: release/MeshSight-debug.apk
           if-no-files-found: error
 
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
+      - name: Publish rolling debug release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
         with:
-          name: meshsight-release-apk
-          path: android/app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
+          tag_name: latest
+          name: MeshSight — Latest Debug Build
+          prerelease: true
+          body: |
+            Rolling **debug build** of MeshSight, rebuilt automatically on every
+            push to `main` that touches the Android app.
+
+            **Download either file:**
+            - `MeshSight-debug.apk` — install directly on your phone
+            - `MeshSight-debug.zip` — the same APK, compressed (smaller to download)
+
+            > This is a debug build: it is not signed for Play Store distribution
+            > and you must allow "install from unknown sources".
+          files: |
+            release/MeshSight-debug.apk
+            release/MeshSight-debug.zip
