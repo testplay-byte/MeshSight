@@ -6,8 +6,6 @@ import {
   GUIDE_ICONS,
   IconArrowLeft,
   IconArrowRight,
-  IconClock,
-  IconDownload,
 } from "@/components/Icons";
 import StepIllustration from "@/components/StepIllustration";
 import Toc from "@/components/Toc";
@@ -82,67 +80,24 @@ export default async function GuidePage({
 
   return (
     <div className="flex flex-col">
-      {/* ── Step header card ─────────────────────────────────────── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div className="deco-glow" />
-        <div
+      {/* ── Step header ── */}
+      <header style={{ marginBottom: 36 }}>
+        <p className="label-micro-bold" style={{ marginBottom: 10 }}>
+          Step {guide.step} of {guides.length} — {guide.time}
+        </p>
+        <h1 className="display-h2">{guide.short}</h1>
+        <p
           style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 16,
-            flexWrap: "wrap",
+            fontSize: 15,
+            color: "var(--color-text-secondary)",
+            maxWidth: 640,
+            lineHeight: 1.65,
+            marginTop: 14,
           }}
         >
-          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-            <div className="icon-badge lg">{Icon ? <Icon className="ic l" /> : null}</div>
-            <div>
-              <div
-                className="mono"
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "var(--color-text-dim)",
-                  marginBottom: 4,
-                }}
-              >
-                Step {guide.step} of {guides.length}
-              </div>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>
-                {guide.short}
-              </h1>
-              <p
-                style={{
-                  fontSize: 13,
-                  color: "var(--color-text-secondary)",
-                  marginTop: 8,
-                  maxWidth: 560,
-                  lineHeight: 1.6,
-                }}
-              >
-                {guide.goal}
-              </p>
-            </div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-            <span className="badge sky">
-              <IconClock className="ic xs" />
-              {guide.time}
-            </span>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              {guide.outputs.map((o) => (
-                <span key={o} className="badge lime">
-                  {o}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* progress */}
-        <div style={{ marginTop: 20 }}>
+          {guide.goal}
+        </p>
+        <div style={{ marginTop: 28 }}>
           <div className="progress">
             <div style={{ width: `${pct}%` }} />
           </div>
@@ -153,7 +108,7 @@ export default async function GuidePage({
               justifyContent: "space-between",
               fontSize: 10,
               color: "var(--color-text-dim)",
-              marginTop: 6,
+              marginTop: 8,
             }}
           >
             <span>PHOTOS</span>
@@ -163,7 +118,7 @@ export default async function GuidePage({
             <span>PHONE</span>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* ── Illustration (hidden on mobile) ──────────────────────── */}
       <div className="card mb illo-wrap">
@@ -254,7 +209,7 @@ export default async function GuidePage({
           >
             <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
               <span className="lbl" style={{ color: "var(--color-accent-lime)" }}>Done?</span>
-              <IconDownload className="ic xs" style={{ color: "var(--color-accent-lime)" }} />
+              <IconArrowRight className="ic xs" style={{ color: "var(--color-accent-lime)" }} />
             </div>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", marginTop: 4 }}>
               Download the APK
