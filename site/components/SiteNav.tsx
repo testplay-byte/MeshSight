@@ -39,21 +39,12 @@ export default function SiteNav() {
           </Link>
         ))}
         <a
-          href={`${GITHUB}/releases`}
-          target="_blank"
-          rel="noreferrer"
-          className="btn-primary"
-          style={{ height: 38, fontSize: 13, padding: "0 16px", marginLeft: 8 }}
-        >
-          Get the APK
-        </a>
-        <a
           href={GITHUB}
           target="_blank"
           rel="noreferrer"
           className="icon-btn"
           aria-label="GitHub repository"
-          style={{ marginLeft: 4 }}
+          style={{ marginLeft: 8 }}
         >
           <IconGithub className="ic" />
         </a>

@@ -8,6 +8,8 @@ export type Guide = {
   title: string;
   /** short label used in the timeline rail */
   short: string;
+  /** two-word summary shown inside the flow diagram nodes */
+  sub: string;
   /** one-liner shown on the guides index + step header */
   goal: string;
   /** curated card description */
@@ -27,6 +29,7 @@ const DOCS_DIR = path.join(process.cwd(), "..", "docs");
 
 type Meta = {
   short: string;
+  sub: string;
   description: string;
   time: string;
   inputs: string[];
@@ -36,6 +39,7 @@ type Meta = {
 const META: Record<string, Meta> = {
   "01-collect-and-organize": {
     short: "Collect & Organize",
+    sub: "photos",
     description:
       "Decide your classes, gather varied photos, and sort them into per-class folders.",
     time: "30–60 min",
@@ -44,6 +48,7 @@ const META: Record<string, Meta> = {
   },
   "02-annotate": {
     short: "Annotate",
+    sub: "polygons",
     description:
       "Trace polygons around every object with LabelMe or CVAT and package ALL.zip.",
     time: "60–120 min",
@@ -52,6 +57,7 @@ const META: Record<string, Meta> = {
   },
   "03-run-colab-pipeline": {
     short: "Run Colab Pipeline",
+    sub: "10 stages",
     description:
       "Upload the archive to Drive, run the 10 stages in Colab, download the organized dataset.",
     time: "20–40 min",
@@ -60,6 +66,7 @@ const META: Record<string, Meta> = {
   },
   "04-split-and-cluster": {
     short: "Split & Cluster",
+    sub: "variants",
     description:
       "Understand the two core ideas: one crop per object, and classes split into visual variants.",
     time: "10 min read",
@@ -68,6 +75,7 @@ const META: Record<string, Meta> = {
   },
   "05-convert-dataset": {
     short: "Convert to YOLO",
+    sub: "YOLO format",
     description:
       "Turn the organized folders into a train/val YOLO-se dataset with dataset.yaml + classes.txt.",
     time: "5 min",
@@ -76,6 +84,7 @@ const META: Record<string, Meta> = {
   },
   "06-train-and-export": {
     short: "Train & Export",
+    sub: "TFLite",
     description:
       "Fine-tune YOLOv8-se on the dataset in Colab and export a TFLite model the app accepts.",
     time: "15–40 min",
@@ -84,6 +93,7 @@ const META: Record<string, Meta> = {
   },
   "07-android-app": {
     short: "Android App",
+    sub: "live",
     description:
       "Grab the CI-built APK from Releases, load your model and labels, and recognize objects live.",
     time: "5 min",
@@ -135,6 +145,7 @@ export function getGuides(): Guide[] {
     const slug = f.replace(/\.md$/, "");
     const meta = META[slug] ?? {
       short: slug,
+      sub: "",
       description: "",
       time: "",
       inputs: [],
@@ -145,6 +156,7 @@ export function getGuides(): Guide[] {
       step: i + 1,
       title: (data.title as string) || meta.short,
       short: meta.short,
+      sub: meta.sub,
       goal: extractGoal(content),
       description: meta.description,
       time: meta.time,

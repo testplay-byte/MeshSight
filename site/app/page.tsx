@@ -1,74 +1,63 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import PipelineDiagram from "@/components/PipelineDiagram";
-import { IconArrowRight, IconDownload } from "@/components/Icons";
+import PipelineDiagram, { type FlowStage } from "@/components/PipelineDiagram";
+import { IconArrowRight } from "@/components/Icons";
 import { getGuides } from "@/lib/guides";
-
-const RELEASES = "https://github.com/testplay-byte/MeshSight/releases";
-
-const WHY = [
-  <>One photo of five dogs becomes <span className="display-hl">five samples</span>.</>,
-  <>Look-alike classes <span className="display-hl">split themselves</span>.</>,
-  <>It all <span className="display-hl">runs on your phone</span> — offline.</>,
-];
 
 export default function Home() {
   const guides = getGuides();
 
+  const stages: FlowStage[] = guides.map((g) => ({
+    href: `/guides/${g.slug}`,
+    label: g.short,
+    sub: g.sub,
+    time: g.time,
+  }));
+
   return (
-    <div className="flex flex-col" style={{ maxWidth: 980 }}>
-      {/* ── Hero ── */}
+    <div className="flex flex-col" style={{ maxWidth: 1120 }}>
+      {/* ── Split hero: motto + CTA left, big clickable flow right ── */}
       <section
-        className="flex flex-col items-start gap-7"
-        style={{ minHeight: "52dvh", justifyContent: "center" }}
+        className="grid items-center gap-10"
+        style={{ gridTemplateColumns: "minmax(0,1fr)" }}
       >
-        <Logo className="h-14 w-14 rounded-2xl" animated />
-        <h1 className="display-hero">
-          Train your own
-          <br />
-          object recognition.
-        </h1>
-        <p
-          style={{
-            fontSize: 17,
-            color: "var(--color-text-muted)",
-            maxWidth: 460,
-            lineHeight: 1.6,
-          }}
-        >
-          From photos to live detection — on your phone.
-        </p>
-        <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-          <Link href="/guides" className="btn-primary">
-            Start the guide
-            <IconArrowRight className="ic" />
-          </Link>
-          <a
-            href={RELEASES}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-ghost"
-            style={{ height: 48, fontSize: 14, padding: "0 20px" }}
-          >
-            <IconDownload className="ic s" />
-            Get the APK
-          </a>
-        </div>
-      </section>
+        <div className="hero-grid">
+          {/* left — motto + start */}
+          <div className="flex flex-col items-start gap-6">
+            <span className="badge lime" style={{ padding: "5px 12px", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}>
+              Self-hosted · On-device · No cloud
+            </span>
+            <h1 className="display-hero" style={{ fontSize: "clamp(38px, 4.6vw, 62px)" }}>
+              Train your own object recognition.
+            </h1>
+            <p
+              style={{
+                fontSize: 16,
+                color: "var(--color-text-muted)",
+                maxWidth: 400,
+                lineHeight: 1.6,
+              }}
+            >
+              From photos to live detection — on your phone.
+            </p>
+            <Link href="/guides" className="btn-primary">
+              Start the guide
+              <IconArrowRight className="ic" />
+            </Link>
+          </div>
 
-
-      {/* How it flows */}
-      <section style={{ marginTop: 72 }}>
-        <p className="label-micro-bold" style={{ marginBottom: 16 }}>
-          How it flows
-        </p>
-        <div className="card">
-          <PipelineDiagram />
+          {/* right — the flow, big and bold, clickable */}
+          <div className="card" style={{ padding: 24 }}>
+            <div className="card-head" style={{ marginBottom: 12 }}>
+              <span className="card-title">How it flows — click a stage</span>
+            </div>
+            <PipelineDiagram stages={stages} />
+          </div>
         </div>
       </section>
 
       {/* ── The pipeline: seven bold rows ── */}
-      <section style={{ marginTop: 40 }}>
+      <section style={{ marginTop: 72 }}>
         <p className="label-micro-bold" style={{ marginBottom: 8 }}>
           The pipeline
         </p>
@@ -87,34 +76,6 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </section>
-
-      {/* ── Why: three bold statements ── */}
-      <section style={{ marginTop: 96 }}>
-        <p className="label-micro-bold" style={{ marginBottom: 24 }}>
-          Why it works
-        </p>
-        <div className="stagger flex flex-col gap-10">
-          {WHY.map((line, i) => (
-            <p key={i} className="display-say">
-              {line}
-            </p>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section
-        className="flex flex-col items-center gap-4"
-        style={{ margin: "110px auto 30px", textAlign: "center" }}
-      >
-        <a href={RELEASES} target="_blank" rel="noreferrer" className="btn-primary">
-          <IconDownload className="ic" />
-          Download the APK
-        </a>
-        <span className="mono dim-t" style={{ fontSize: 11 }}>
-          debug build · rebuilt on every change
-        </span>
       </section>
     </div>
   );
