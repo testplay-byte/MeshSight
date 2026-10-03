@@ -24,7 +24,7 @@ a known TODO, see CONTRIBUTING.md.)
 ## Step 2 — Install & mount
 
 ```python
-!pip install ultralytics -q
+!pip install "ultralytics==8.3.0" -q   # pinned: 8.4.83+ renames tflite -> litert
 from google.colab import drive
 drive.mount('/content/drive')
 
@@ -49,6 +49,9 @@ TFLite mobile + your phone's RAM handle gracefully.
 ## Step 4 — Train
 
 ```python
+import os
+os.chdir("/content")          # dataset.yaml's `path:` is relative to cwd
+
 from ultralytics import YOLO
 
 model = YOLO("yolov8n-seg.pt")          # COCO pre-trained weights → fine-tuned on yours
@@ -69,7 +72,8 @@ Typical time: ~100 epochs on a few hundred images ≈ 10–30 min on T4.
 > 💡 **Validate the model before exporting:**
 > ```python
 > model = YOLO("/content/runs/segment/train/weights/best.pt")
-> model.val()
+> model.val(data="/content/yolo_dataset/dataset.yaml", plots=True)
+> # writes runs/segment/val/val_batch*_labels.jpg — your boxes drawn on real images
 > ```
 > `mAP50 > 0.8` is a healthy target for small custom datasets. If poor:
 > add data (Guide 02), fix outliers (Guide 04), not epochs.
@@ -77,7 +81,7 @@ Typical time: ~100 epochs on a few hundred images ≈ 10–30 min on T4.
 ## Step 5 — Export to TFLite (the critical flags)
 
 ```python
-model.export(
+exported = model.export(
     format="tflite",
     half=False,       # keep float32 → the app's parser expects raw floats
     int8=False,       # no quantization for now (adds calibration complexity)
@@ -87,6 +91,7 @@ model.export(
                       #    (bundled NMS ops aren't supported by the TFLite
                       #     GPU delegate and break ModelManager's parser)
 )
+print(exported)     # trust this printed path over any filename in the docs
 ```
 
 Output: `/content/runs/segment/train/weights/best_float32.tflite` (+ `.metadata.yaml`

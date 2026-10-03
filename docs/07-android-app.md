@@ -12,7 +12,7 @@ your machine).
 
 [[illustration:app]]
 
-## Getting the APK — GitHub Releases
+## Step 1 — Get the APK
 
 The app is never compiled locally in this project; CI does it:
 
@@ -25,8 +25,9 @@ The app is never compiled locally in this project; CI does it:
    - `MeshSight-debug.zip` — the same APK, compressed (smaller download)
 3. Download either file → unzip if needed → install.
 
-You can also press **Run workflow** (workflow_dispatch) for a manual build
-from any branch.
+You can also press **Run workflow** to build from any branch. Only pushes to
+`main` publish a Release; a manual run (or a PR build) produces the same APK
+under **Actions → Artifacts → `meshsight-debug-apk`**, valid for 90 days.
 
 > First CI run of a fresh repo is also the *compile check* for the app —
 > Kotlin errors surface as a failed build with the Gradle log. Fix, push,
@@ -34,27 +35,37 @@ from any branch.
 
 ### Installing on the phone
 
-1. Copy `MeshSight-debug.apk` to the phone (Drive, cable, anything).
+Requires **Android 12 or newer** (the app targets API 31+).
+
+1. Copy `MeshSight-debug.apk` to the phone (Drive, cable, anything). Also
+   download `best_float32.tflite` and `classes.txt` to the phone's **Downloads**
+   folder first — the app's file picker opens local files, not Drive previews.
 2. Tap it → allow "install unknown apps" for that source (debug builds aren't
    Play-signed; that's expected).
 3. Launch → grant **Camera** permission when asked.
+
+- [ ] App launches and shows the live feed
+- [ ] Model loads (badge stops saying *AWAITING MODEL*)
+- [ ] Labels appear as names, not *Obj 0*
 
 *(Optional future step: add release signing secrets — `KEYSTORE`, `KEY_ALIAS`,
 `KEY_PASSWORD` — to repo Settings → Secrets, and wire signing into
 `android/app/build.gradle.kts`. Until then, debug builds are the install path.)*
 
-## Using the app
+## Step 3 — Use the app
 
-### First launch: load your model
+## Step 2 — Load your model
 
 - **Settings (⚙ bottom-right) → Swap Active Model** → pick your
   `.tflite` (from Guide 06). It's copied into app storage and **auto-loads on
   every future launch**.
 - **Settings → Load Class Labels** → pick `classes.txt` from Guide 05.
   Detections now show real names (`CAT_C1 92%`) instead of `Obj 0 92%`.
-- **Enable GPU** toggle: on by default; the app silently falls back to CPU if
-  your device's GPU delegate fails. Flip it to compare latency (shown in the
-  badge, bottom card).
+- **Enable GPU** toggle: on by default. The app tries the TFLite GPU delegate
+  and falls back to CPU **only** if the delegate itself can't be created. If a
+  known-good model shows **LOAD FAILED**, flip this off and re-pick the model —
+  some Adreno/Mali drivers reject the delegate at load time. Compare the
+  **LATENCY** stat (bottom card) to see which is faster on your phone.
 
 ### Live camera mode
 
@@ -70,7 +81,7 @@ Green blinking dot = live feed.
   swipe between them, each page gets fresh inference. Page dots show position.
 - Resume (▶) returns to live detection.
 
-## Model compatibility (what ModelManager accepts)
+## Model compatibility (reference)
 
 | Exported model style | Works? | How it's detected |
 |---|---|---|
@@ -80,10 +91,11 @@ Green blinking dot = live feed.
 | INT8-quantized / `nms=True` / non-NHWC | ❌ | re-export with Guide 06's flags |
 
 Input resolution is read from the model itself (640, 320, anything) — no app
-setting needed. Confidence/NMS thresholds are in `ModelManager`
-(`CONFIDENCE_THRESHOLD`, `NMS_IOU_THRESHOLD`).
+setting needed. Confidence/NMS thresholds are compile-time constants in
+`ModelManager.kt` (`CONFIDENCE_THRESHOLD` 0.35, `NMS_IOU_THRESHOLD` 0.45) —
+edit, push, and let CI rebuild to change them.
 
-## Troubleshooting
+## Troubleshooting (reference)
 
 | Symptom | Fix |
 |---|---|
@@ -94,7 +106,7 @@ setting needed. Confidence/NMS thresholds are in `ModelManager`
 | Badge says AWAITING MODEL | you're browsing gallery or camera started before model load — load in Settings |
 | App killed installing debug over release build | uninstall first, then install the debug APK |
 
-## App internals (for when you want to change it)
+## App internals (reference) (for when you want to change it)
 
 See [ARCHITECTURE.md](../ARCHITECTURE.md) — short version:
 `MainActivity` (UI + one inference path) → `ModelManager` (TFLite, letterbox,

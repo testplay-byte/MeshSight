@@ -1749,3 +1749,20 @@ body:has(.wizard) .orb { display: none; }
   .flow-panel { padding: 20px; }
   .hero-title { font-size: 36px; }
 }
+
+/* ── Focus + motion safety (accessibility pass) ──────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent-lime);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.display-h2:focus { outline: none; }
+.display-h2:focus-visible { outline: 2px solid var(--color-accent-lime); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

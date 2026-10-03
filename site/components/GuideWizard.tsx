@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -35,23 +35,31 @@ export default function GuideWizard({
   const router = useRouter();
   const [i, setI] = useState(0);
   const [done, setDone] = useState<Record<string, boolean>>({});
+  const [hydrated, setHydrated] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
-  // keep check-offs across refreshes
+  // keep check-offs across refreshes. The load effect must finish before
+  // any save runs, or the initial `{}` overwrites the saved value.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(`ms-check:${guide.slug}`);
       if (raw) setDone(JSON.parse(raw));
     } catch {}
+    setHydrated(true);
   }, [guide.slug]);
 
   useEffect(() => {
+    if (!hydrated) return;
     try {
       window.localStorage.setItem(`ms-check:${guide.slug}`, JSON.stringify(done));
     } catch {}
-  }, [guide.slug, done]);
+  }, [guide.slug, done, hydrated]);
 
+  // move focus to the new heading so keyboard users land on the content
+  // instead of re-pressing the (recycled) Next button.
   useEffect(() => {
     window.scrollTo(0, 0);
+    headingRef.current?.focus();
   }, [i]);
 
   const step: Step | undefined = guide.steps[i];
@@ -67,17 +75,34 @@ export default function GuideWizard({
         href?: string;
         children?: React.ReactNode;
       }) => {
-        const target = href
-          ? href.match(/^\d{2}-/)
-            ? `/guides/${href.replace(/\.md.*$/, "")}`
-            : githubUrl(href.replace(/^\.\.?\//, "").replace(/^docs\//, ""))
-          : href;
-        const external = Boolean(href && /^(https?:|mailto:)/.test(href));
+        // absolute links pass straight through (never github-rewrapped)
+        if (!href || /^(https?:|mailto:|#|\/)/.test(href)) {
+          return (
+            <a
+              href={href}
+              target={href && /^(https?:|mailto:)/.test(href) ? "_blank" : undefined}
+              rel={href && /^(https?:|mailto:)/.test(href) ? "noreferrer" : undefined}
+              {...rest}
+            >
+              {children}
+            </a>
+          );
+        }
+        // sibling guide link → site route (next/link adds the basePath)
+        const sibling = href.match(/^(\d{2}-[a-z0-9-]+)\.md(.*)$/);
+        if (sibling) {
+          return (
+            <Link href={`/guides/${sibling[1]}`} {...rest}>
+              {children}
+            </Link>
+          );
+        }
+        // repo-relative file → GitHub
         return (
           <a
-            href={target}
-            target={external ? "_blank" : undefined}
-            rel={external ? "noreferrer" : undefined}
+            href={githubUrl(href.replace(/^docs\//, ""))}
+            target="_blank"
+            rel="noreferrer"
             {...rest}
           >
             {children}
@@ -125,9 +150,24 @@ export default function GuideWizard({
       <main className="wiz-body">
         <div className="wiz-step">
           <p className="label-micro-bold" style={{ marginBottom: 10 }}>
-            Step {step.n} of {guide.steps.length}
+            {step.numbered ? `Step ${step.n} of ${guide.steps.length}` : "Reference"}
           </p>
-          <h1 className="display-h2">{step.title}</h1>
+          <h1 ref={headingRef} tabIndex={-1} className="display-h2">
+            {step.title}
+          </h1>
+
+          {/* the guide's framing text (goal + any critical callout) */}
+          {i === 0 && guide.intro && (
+            <div className="md" style={{ marginBottom: 20 }}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                components={mdComponents}
+              >
+                {guide.intro}
+              </ReactMarkdown>
+            </div>
+          )}
 
           {step.illustration && (
             <div className="wiz-illo">
@@ -144,7 +184,8 @@ export default function GuideWizard({
                     <button
                       className={`wiz-check-row${on ? " on" : ""}`}
                       onClick={() => setDone((d) => ({ ...d, [c.id]: !d[c.id] }))}
-                      aria-pressed={on}
+                      role="checkbox"
+                      aria-checked={on}
                     >
                       <span className="wiz-box">
                         {on && <IconCheck className="ic xs" />}

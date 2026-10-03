@@ -89,7 +89,9 @@ faster and recognizes your objects, not your average stock photo.
 | `HDBSCAN_MIN_CLUSTER_SIZE` | 15 | tiny groups shouldn't exist | you *want* many small variants |
 | `MIN_GROUP_SIZE_FOR_CLUSTER` | 5 | small classes split wrongly | (rare — keep ≥ 5) |
 
-Rule: change one knob at a time, re-run stages 06–07, and read the
-clustering table + visual map before touching anything else.
+**Re-run ranges:** `PADDING_FACTOR` → stages **04 → 05 → 06 → 07 → 08 → 09**.
+`UMAP_*` / `HDBSCAN_*` / `MIN_GROUP_SIZE_FOR_CLUSTER` → stages **06 → 07 → 08 → 09**
+(07 computes the clusters, 08 rewrites the `<Label_C#>/` folders, 09 rebuilds the
+map). Change one knob at a time, then re-run stage 10 to re-zip.
 
 **Next →** [Guide 05: convert the organized dataset to YOLO format](05-convert-dataset.md)

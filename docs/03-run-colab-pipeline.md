@@ -23,6 +23,9 @@ instead, stage 01 finds it and adds it to the path. Either way works now.
 
 ## Step 1 — Upload `ALL.zip` to Google Drive
 
+- [ ] `MyDrive/MeshSight/DATA/` exists
+- [ ] `ALL.zip` is inside it
+
 1. Open [drive.google.com](https://drive.google.com).
 2. Create the folder `MyDrive/MeshSight/DATA/`.
 3. Drag `ALL.zip` into it.
@@ -49,6 +52,8 @@ Stage 01 prints the path it will use — check that table before stage 03.
 
 1. Go to [colab.research.google.com](https://colab.research.google.com) →
    **New notebook**.
+- [ ] Runtime is set to a **T4 GPU** (CPU works but is slow)
+
 2. **Runtime → Change runtime type → T4 GPU** (recommended; CPU works but
    is slow).
 3. In the Colab toolbar click the **code** icon `+` to add a code cell.
@@ -126,17 +131,17 @@ exactly which of the two paths applies.
 
 Press the ▷ button on each cell. Wait for each to finish before the next.
 
-| Stage | What it does | Typical time |
-|---|---|---|
-| `02_helpers.py` | loads geometry helpers | seconds |
-| `03_ingest.py` | mounts Drive, extracts `ALL.zip` | ~1 min |
-| `04_process_images.py` | **splits every object into its own crop** | ~1 min |
-| `05_features.py` | DINOv2 embeddings (needs the GPU) | 2–5 min |
-| `06_reduce.py` | UMAP → 2-D layout | ~1 min |
-| `07_cluster.py` | sub-class clusters + outliers | ~1 min |
-| `08_organize.py` | writes `<Label_C#>/` folders | ~1 min |
-| `09_visual_map.py` | interactive constellation map | ~2 min |
-| `10_package.py` | zips + starts the download | ~1 min |
+Tap each one as it finishes — the checkmarks survive a refresh.
+
+- [ ] `02_helpers.py` — loads geometry helpers (~seconds)
+- [ ] `03_ingest.py` — mounts Drive, extracts `ALL.zip` (~1 min)
+- [ ] `04_process_images.py` — **splits every object into its own crop** (~1 min)
+- [ ] `05_features.py` — DINOv2 embeddings, needs the GPU (2–5 min)
+- [ ] `06_reduce.py` — UMAP → 2-D layout (~1 min)
+- [ ] `07_cluster.py` — sub-class clusters + outliers (~1 min)
+- [ ] `08_organize.py` — writes `<Label_C#>/` folders (~1 min)
+- [ ] `09_visual_map.py` — interactive constellation map (~2 min)
+- [ ] `10_package.py` — zips + starts the download (~1 min)
 
 Stage 03 will prompt you to **grant Drive access** — click *Connect* /
 *Allow*. Nothing else needs permissions.
@@ -151,7 +156,7 @@ Stage 03 will prompt you to **grant Drive access** — click *Connect* /
 | `FileNotFoundError` at stage 03 | The archive path is wrong — check the config table stage 01 printed |
 | Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, step 6 |
 | Colab disconnected | Runtime → Run all from stage 01 again; RAM resets between runs |
-| OOM during stage 05 | Runtime → Change runtime type → pick a larger GPU (L4 / A100) |
+| OOM during stage 05 | Free Colab offers T4 (sometimes L4). Interrupt the runtime, re-run stage 05. If it still OOMs, split your photos into 2–3 smaller zips and run stages 03–09 once per zip, or upgrade to a paid GPU. |
 
   </div>
 </details>

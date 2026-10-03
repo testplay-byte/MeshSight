@@ -40,12 +40,14 @@ Keyboard shortcuts that matter:
 
 | Key | Action |
 |---|---|
-| `Ctrl + O` | Open image / folder |
-| `Ctrl + J` | Create a new polygon |
-| `Ctrl + S` | Save (writes the `.json` next to the image) |
-| `Ctrl + Z` | Undo last point |
+| `Ctrl + U` | Open a **folder** of images |
+| `Ctrl + N` | Start a **new polygon** |
+| `Ctrl + J` | **Edit** the selected polygon |
+| **double-click** | **Close the current polygon** |
+| `Ctrl + S` | Save (writes `<image-name>.json` next to the image) |
+| `Ctrl + Z` | Undo last point / last edit |
 | `Del` | Delete the selected polygon |
-| `W` / `A` | Create polygon / start editing |
+| `A` / `D` | Previous / next image |
 
 Menu equivalents: **File → Open Dir**, **File → Save**, **Help → Keyboard Shortcuts**.
 
@@ -54,20 +56,41 @@ Menu equivalents: **File → Open Dir**, **File → Save**, **Help → Keyboard 
 
 ## Step 2 — Launch LabelMe on your photos
 
-Point it at the `cat` folder (repeat for each class folder):
+Point it at the working copy — `data/ANNOTATED/cat` (you'll copy your
+photos there in Step 3).
+
+**Getting the exact path on Windows:** open File Explorer, navigate to the
+`cat` folder, then **Shift + right-click the folder → Copy as path**, and
+paste it into the command:
 
 ```bash
-labelme "C:\Users\YOUR_NAME\path\data\photos\cat"
+labelme "C:\Users\you\...\data\ANNOTATED\cat"
 ```
 
-Replace the path with your own. On macOS/Linux the same command works with
-a POSIX path.
+If Windows says *'labelme' is not recognized*, the LabelMe scripts folder
+isn't on your PATH — use `python -m labelme "C:\..."` instead.
 
 <div class="do-this"><strong>Tip:</strong> keep one LabelMe window per class
 folder. LabelMe remembers the last folder, so finishing <code>cat</code> and
 then opening <code>hand</code> takes one click.</div>
 
-## Step 3 — Pick your tool: LabelMe or CVAT
+## Step 3 — Set up the working copy
+
+<div class="do-this"><strong>Never annotate over your originals.</strong>
+`data/photos/` is your master copy — copy it into a working folder and
+annotate there, so a bad first pass can never cost you the originals.</div>
+
+For each class folder:
+
+1. Create `data/ANNOTATED/` if it doesn't exist, with one sub-folder per
+   class (`cat`, `hand`, …).
+2. Open `data/photos/cat`, press <code>Ctrl+A</code>, copy, and paste into
+   `data/ANNOTATED/cat/`. Repeat for every class.
+
+LabelMe writes each `.json` **beside** the image it describes, so images and
+annotations must live in the same folder.
+
+## Step 4 — Pick your tool: LabelMe or CVAT
 
 Both end up in the same place (LabelMe-style JSON). Choose the one you
 prefer — then follow just that path.
@@ -85,22 +108,24 @@ prefer — then follow just that path.
   </div>
 </div>
 
+## Step 5 — Annotate every image
+
 <details class="guide-box">
   <summary><span class="chev">▾</span>Path A — Annotate in LabelMe</summary>
   <div class="details-body">
 
 For each image in the folder:
 
-1. Press `Ctrl + J` to start a polygon.
+1. Press `Ctrl + N` to start a polygon.
 2. Click along the object's outline — follow the real edge, corners on the
    object (ears, paws, fingertips).
-3. Close the shape (click the first point again, or right-click → Close
-   Polygon) and **type the class label** in the dialog that appears — use
+3. **Double-click** to close the shape, then **type the class label** in the
+   dialog that appears — use
    the exact folder name (`cat`, `hand`).
 4. Repeat for **every** object in the image. Two cats = two polygons.
 5. Press `Ctrl + S`.
 
-When you save, LabelMe writes `cat_001.jpg.json` right beside
+When you save, LabelMe writes `cat_001.json` right beside
 `cat_001.jpg`. When the folder is done, move on to the next class folder.
 
   </div>
@@ -144,7 +169,7 @@ noise. The rules:
   </div>
 </details>
 
-## Step 4 — Build the ANNOTATED folder
+## Step 6 — Check the ANNOTATED folder
 
 Assemble this shape before zipping — the pipeline expects exactly this:
 
@@ -153,11 +178,11 @@ data/
 └── ANNOTATED/
     ├── cat/
     │   ├── cat_001.jpg
-    │   ├── cat_001.jpg.json
+    │   ├── cat_001.json
     │   └── ...
     └── hand/
         ├── hand_001.jpg
-        ├── hand_001.jpg.json
+        ├── hand_001.json
         └── ...
 ```
 
@@ -165,32 +190,35 @@ data/
 and their contents with the class prefix (<code>cat_001.jpg</code>). It makes
 the next stage's naming self-explanatory.</div>
 
-## Step 5 (optional) — Pre-crop locally
+## Step 7 (optional) — Pre-crop locally
 
 This runs the same "one crop per object" split that Colab will run later, so
 you can inspect the crops before uploading. It is not required.
 
 ```bash
-python scripts/crop_labelme_images.py
+python ../scripts/crop_labelme_images.py -y
 ```
 
-Run it from inside your `data/` folder. The script auto-detects `ANNOTATED/`
-next to it and writes per-instance crops to `cropped/<label>/`. **Your
-originals are kept** unless you pass `--delete-originals`.
+Run it from inside `data/`. The script locates everything **relative to its own
+location** — it looks for `ANNOTATED/` inside `scripts/` and writes crops to
+`scripts/cropped/<label>/`. If `ANNOTATED/` isn't there, copy it into `scripts/`
+first, or skip this optional step and let Colab crop in stage 04.
+
+**Your originals are kept** unless you pass `--delete-originals`.
 
 <details class="guide-box">
   <summary><span class="chev">▾</span>What the script needs, and what it won't do</summary>
   <div class="details-body">
 
 - Requires `pip install opencv-python rich pillow`.
-- Only reads `<image>.jpg` + `<image>.jpg.json` pairs, so a missing JSON
+- Only reads `<image>.jpg` + `<image>.json` pairs, so a missing JSON
   means that image is skipped (it shows up as "un-annotated" in the report).
 - It never touches images without polygons, even with `--delete-originals`.
 
   </div>
 </details>
 
-## Step 6 — Zip it (this part matters)
+## Step 8 — Zip it (this part matters)
 
 <div class="do-this"><strong>Zip the class folders themselves — not the
 <code>ANNOTATED</code> folder, and not your original <code>photos</code>
@@ -200,8 +228,8 @@ What the archive must contain at its **root**:
 
 ```
 ALL.zip
-├── cat/     ← cat_001.jpg + cat_001.jpg.json + …
-└── hand/    ← hand_001.jpg + hand_001.jpg.json + …
+├── cat/     ← cat_001.jpg + cat_001.json + …
+└── hand/    ← hand_001.jpg + hand_001.json + …
 ```
 
 The quickest way:

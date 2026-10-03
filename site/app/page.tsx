@@ -37,7 +37,9 @@ export default function Home() {
           {stages.map((s) => (
             <Link key={s.key} href={`/guides/${s.guides[0]}`} className="rail-row">
               <span className={`rail-node${s.sky ? " sky" : ""}`}>
-                {String(s.guide.step).padStart(2, "0")}
+                {s.guides
+                  .map((slug) => String(bySlug.get(slug)?.step ?? "").padStart(2, "0"))
+                  .join("·")}
               </span>
               <span className="rail-title">{s.label}</span>
               <span className="rail-blurb">{s.blurb}</span>

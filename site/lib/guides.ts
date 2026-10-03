@@ -10,6 +10,8 @@ export type ChecklistItem = { id: string; text: string };
 export type Step = {
   /** 1-based position inside the guide */
   n: number;
+  /** false when the source heading wasn't `## Step N — …` (reference sections) */
+  numbered: boolean;
   /** short step title, e.g. "Install LabelMe" */
   title: string;
   /** markdown body for this step (goal/markers/checklists stripped) */
@@ -156,6 +158,14 @@ export const PHASES: Phase[] = [
     blurb: "One archive in, a sorted dataset out",
   },
   {
+    key: "understand",
+    label: "Understand the Output",
+    guides: ["04-split-and-cluster"],
+    wide: true,
+    details: ["crop", "split", "cluster", "outliers"],
+    blurb: "What the pipeline just did — worth 10 minutes",
+  },
+  {
     key: "train",
     label: "Convert & Train",
     guides: ["05-convert-dataset", "06-train-and-export"],
@@ -191,11 +201,11 @@ function extractHeadings(content: string): { id: string; text: string }[] {
   return out;
 }
 
-/** Split a guide into wizard screens: one per `## Step` section. */
+/** Split a guide into wizard screens: one per `##` section. */
 function parseSteps(content: string): { intro: string; steps: Step[] } {
-  // Everything before the first `## Step` is framing, shown above step 1.
-  const firstStep = content.search(/^##\s+Step\s+\d+/m);
-  const intro = (firstStep === -1 ? content : content.slice(0, firstStep)).trim();
+  // Everything before the first `##` is framing, shown above step 1.
+  const firstHeading = content.search(/^##\s+/m);
+  const intro = (firstHeading === -1 ? content : content.slice(0, firstHeading)).trim();
 
   // Sections split on `##`; index 0 is the framing text, the rest are screens.
   const sections = content
@@ -207,12 +217,16 @@ function parseSteps(content: string): { intro: string; steps: Step[] } {
     const nl = sec.indexOf("\n");
     const heading = (nl === -1 ? sec : sec.slice(0, nl)).trim();
     let body = nl === -1 ? "" : sec.slice(nl + 1);
+    const stepNo = heading.match(/^Step\s+(\d+)/i);
 
-    // `## Step 3 — Do the thing` → "Do the thing"
+    // `## Step 3 — Do the thing` → "Do the thing". Sections that aren't
+    // numbered steps (reference material in guides 04/07) keep their title.
     const title = heading
       .replace(/^Step\s+\d+\s*[-—:.]?\s*/i, "")
       .replace(/[*`]/g, "")
       .trim();
+    const numbered = Boolean(stepNo);
+    const n = stepNo ? Number(stepNo[1]) : i + 1;
 
     // pull illustration marker out
     let illustration: string | undefined;
@@ -238,7 +252,7 @@ function parseSteps(content: string): { intro: string; steps: Step[] } {
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    return { n: i + 1, title, body, illustration, checklist };
+    return { n, numbered, title, body, illustration, checklist };
   });
 
   // An illustration marker before the first step belongs to step 1.
