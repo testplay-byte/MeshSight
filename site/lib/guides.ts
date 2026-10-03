@@ -1,28 +1,43 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { githubUrl, headingId } from "./md-utils";
+
+export { githubUrl, headingId };
+
+export type ChecklistItem = { id: string; text: string };
+
+export type Step = {
+  /** 1-based position inside the guide */
+  n: number;
+  /** short step title, e.g. "Install LabelMe" */
+  title: string;
+  /** markdown body for this step (goal/markers/checklists stripped) */
+  body: string;
+  /** illustration registry key, if the step carries one */
+  illustration?: string;
+  /** tappable task list parsed from `- [ ]` lines */
+  checklist: ChecklistItem[];
+};
 
 export type Guide = {
   slug: string;
   step: number;
   title: string;
-  /** short label used in the timeline rail */
   short: string;
-  /** two-word summary shown inside the flow diagram nodes */
   sub: string;
-  /** one-liner shown on the guides index + step header */
   goal: string;
-  /** curated card description */
   description: string;
-  /** estimated wall-clock time for the step */
   time: string;
-  /** what this step consumes */
   inputs: string[];
-  /** what this step produces */
   outputs: string[];
-  /** h2 headings for the in-page table of contents */
   headings: { id: string; text: string }[];
-  content: string;
+  /** markdown before the first `## Step` — short framing shown above step 1 */
+  intro: string;
+  /** one screen per step */
+  steps: Step[];
+  totalSteps: number;
+  checklistTotal: number;
 };
 
 const DOCS_DIR = path.join(process.cwd(), "..", "docs");
@@ -59,7 +74,7 @@ const META: Record<string, Meta> = {
     short: "Run Colab Pipeline",
     sub: "10 stages",
     description:
-      "Upload the archive to Drive, run the 10 stages in Colab, download the organized dataset.",
+      "Upload the archive to Drive, run the stages in Colab, download the organized dataset.",
     time: "20–40 min",
     inputs: ["ALL.zip on Google Drive", "colab/ scripts"],
     outputs: ["organized_dataset.zip", "Visual_Map.html"],
@@ -75,7 +90,7 @@ const META: Record<string, Meta> = {
   },
   "05-convert-dataset": {
     short: "Convert to YOLO",
-    sub: "YOLO format",
+    sub: "dataset",
     description:
       "Turn the organized folders into a train/val YOLO-se dataset with dataset.yaml + classes.txt.",
     time: "5 min",
@@ -86,13 +101,13 @@ const META: Record<string, Meta> = {
     short: "Train & Export",
     sub: "TFLite",
     description:
-      "Fine-tune YOLOv8-se on the dataset in Colab and export a TFLite model the app accepts.",
+      "Fine-tune YOLOv8-se in Colab and export a .tflite model the app accepts.",
     time: "15–40 min",
     inputs: ["data.zip", "dataset.yaml"],
     outputs: ["best_float32.tflite"],
   },
   "07-android-app": {
-    short: "Android App",
+    short: "Run on App",
     sub: "live",
     description:
       "Grab the CI-built APK from Releases, load your model and labels, and recognize objects live.",
@@ -102,38 +117,142 @@ const META: Record<string, Meta> = {
   },
 };
 
+/** The homepage flow — grouped into phases, each phase a block. */
+export type Phase = {
+  key: string;
+  label: string;
+  /** guide slugs behind this phase */
+  guides: string[];
+  /** wide blocks get their own full row on desktop */
+  wide: boolean;
+  /** detail chips shown inside wide blocks */
+  details: string[];
+  blurb: string;
+};
+
+export const PHASES: Phase[] = [
+  {
+    key: "collect",
+    label: "Collect & Organize",
+    guides: ["01-collect-and-organize"],
+    wide: false,
+    details: [],
+    blurb: "Photos into per-class folders",
+  },
+  {
+    key: "annotate",
+    label: "Annotate",
+    guides: ["02-annotate"],
+    wide: false,
+    details: [],
+    blurb: "Polygons with LabelMe or CVAT",
+  },
+  {
+    key: "colab",
+    label: "Run Colab Pipeline",
+    guides: ["03-run-colab-pipeline"],
+    wide: true,
+    details: ["crop", "split", "cluster", "map"],
+    blurb: "One archive in, a sorted dataset out",
+  },
+  {
+    key: "train",
+    label: "Convert & Train",
+    guides: ["05-convert-dataset", "06-train-and-export"],
+    wide: true,
+    details: ["yolo", "train", "tflite"],
+    blurb: "Dataset → .tflite",
+  },
+  {
+    key: "app",
+    label: "Run on App",
+    guides: ["07-android-app"],
+    wide: true,
+    details: [],
+    blurb: "Live detection on your phone",
+  },
+];
+
 function extractGoal(content: string): string {
-  // Goal paragraphs wrap across lines; capture until the next blank line.
   const m = content.match(/\*\*Goal:\*\*\s*((?:[^\n]+\n?)+?)(?=\n\s*\n|$)/);
   if (!m) return "";
-  // Strip inline markdown (emphasis, code) — this renders as plain text.
   return m[1].replace(/[*`]/g, "").replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-}
-
-/** GitHub-flavored slug: lowercase, spaces→-, strip punctuation. */
-export function headingId(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
 }
 
 function extractHeadings(content: string): { id: string; text: string }[] {
   const out: { id: string; text: string }[] = [];
   for (const line of content.split("\n")) {
-    const m = line.match(/^## (?!#)(.+)$/); // h2 only — h3s are sub-detail
+    const m = line.match(/^## (?!#)(.+)$/);
     if (m) {
       const text = m[1].replace(/[*`]/g, "").trim();
-      if (text) out.push({ id: headingId(text), text });
+      out.push({ id: headingId(text), text });
     }
   }
   return out;
 }
 
+/** Split a guide into wizard screens: one per `## Step` section. */
+function parseSteps(content: string): { intro: string; steps: Step[] } {
+  // Everything before the first `## Step` is framing, shown above step 1.
+  const firstStep = content.search(/^##\s+Step\s+\d+/m);
+  const intro = (firstStep === -1 ? content : content.slice(0, firstStep)).trim();
+
+  // Sections split on `##`; index 0 is the framing text, the rest are screens.
+  const sections = content
+    .split(/^##\s+/m)
+    .slice(1)
+    .filter((s) => s.trim());
+
+  const steps: Step[] = sections.map((sec, i) => {
+    const nl = sec.indexOf("\n");
+    const heading = (nl === -1 ? sec : sec.slice(0, nl)).trim();
+    let body = nl === -1 ? "" : sec.slice(nl + 1);
+
+    // `## Step 3 — Do the thing` → "Do the thing"
+    const title = heading
+      .replace(/^Step\s+\d+\s*[-—:.]?\s*/i, "")
+      .replace(/[*`]/g, "")
+      .trim();
+
+    // pull illustration marker out
+    let illustration: string | undefined;
+    const marker = body.match(/\[\[illustration:([a-z-]+)\]\]/);
+    if (marker) {
+      illustration = marker[1];
+      body = body.replace(marker[0], "");
+    }
+
+    // pull `- [ ] task` lines out into a tappable checklist
+    const checklist: ChecklistItem[] = [];
+    body = body
+      .split("\n")
+      .filter((line) => {
+        const m = line.match(/^\s*[-*]\s+\[\s?\]\s+(.+)$/);
+        if (m) {
+          checklist.push({ id: `${i}-${checklist.length}`, text: m[1].trim() });
+          return false;
+        }
+        return true;
+      })
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    return { n: i + 1, title, body, illustration, checklist };
+  });
+
+  // An illustration marker before the first step belongs to step 1.
+  let introClean = intro;
+  const introMarker = intro.match(/\[\[illustration:([a-z-]+)\]\]/);
+  if (introMarker && steps.length) {
+    introClean = intro.replace(introMarker[0], "").trim();
+    if (!steps[0].illustration) steps[0].illustration = introMarker[1];
+  }
+
+  return { intro: introClean, steps };
+}
+
 export function getGuides(): Guide[] {
-  // Only the numbered pipeline guides (01-…md); DESIGN.md and others are
-  // reference docs, not steps.
   const files = fs
     .readdirSync(DOCS_DIR)
     .filter((f) => /^\d{2}-.*\.md$/.test(f))
@@ -151,31 +270,32 @@ export function getGuides(): Guide[] {
       inputs: [],
       outputs: [],
     };
+    const goal = extractGoal(content);
+    const stripped = content
+      .replace(/^\s*\*\*Goal:\*\*[^\n]*(?:\n[^\n]+)*?\n\s*\n/, "")
+      .trimStart();
+    const { intro, steps } = parseSteps(stripped);
+
     return {
       slug,
       step: i + 1,
       title: (data.title as string) || meta.short,
       short: meta.short,
       sub: meta.sub,
-      goal: extractGoal(content),
+      goal,
       description: meta.description,
       time: meta.time,
       inputs: meta.inputs,
       outputs: meta.outputs,
       headings: extractHeadings(content),
-      // The Goal paragraph is shown in the page header — strip it from the
-      // article body to avoid duplication.
-      content: content.replace(/^\s*\*\*Goal:\*\*[^\n]*(?:\n[^\n]+)*?\n\s*\n/, "").trimStart(),
+      intro,
+      steps,
+      totalSteps: steps.length,
+      checklistTotal: steps.reduce((n, s) => n + s.checklist.length, 0),
     };
   });
 }
 
 export function getGuide(slug: string): Guide | undefined {
   return getGuides().find((g) => g.slug === slug);
-}
-
-/** GitHub URL for a repo-root-relative path (used to rewrite relative md links). */
-export function githubUrl(relPath: string): string {
-  const clean = relPath.replace(/^(\.\/|\.\.\/)+/, "");
-  return `https://github.com/testplay-byte/MeshSight/blob/main/${clean}`;
 }

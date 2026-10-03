@@ -1,77 +1,85 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import PipelineDiagram, { type FlowStage } from "@/components/PipelineDiagram";
 import { IconArrowRight } from "@/components/Icons";
-import { getGuides } from "@/lib/guides";
+import { getGuides, PHASES } from "@/lib/guides";
 
 export default function Home() {
   const guides = getGuides();
-
-  const stages: FlowStage[] = guides.map((g) => ({
-    href: `/guides/${g.slug}`,
-    label: g.short,
-    sub: g.sub,
-    time: g.time,
-  }));
+  const bySlug = new Map(guides.map((g) => [g.slug, g]));
 
   return (
-    <div className="flex flex-col" style={{ maxWidth: 1120 }}>
-      {/* ── Split hero: motto + CTA left, big clickable flow right ── */}
+    <div className="flex flex-col" style={{ maxWidth: 1040 }}>
+      {/* ── Hero ─────────────────────────────────────────────────── */}
       <section
-        className="grid items-center gap-10"
-        style={{ gridTemplateColumns: "minmax(0,1fr)" }}
+        className="flex flex-col items-start gap-6"
+        style={{ paddingTop: 24, paddingBottom: 16 }}
       >
-        <div className="hero-grid">
-          {/* left — motto + start */}
-          <div className="flex flex-col items-start gap-6">
-            <span className="badge lime" style={{ padding: "5px 12px", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}>
-              Self-hosted · On-device · No cloud
-            </span>
-            <h1 className="display-hero" style={{ fontSize: "clamp(38px, 4.6vw, 62px)" }}>
-              Train your own object recognition.
-            </h1>
-            <p
-              style={{
-                fontSize: 16,
-                color: "var(--color-text-muted)",
-                maxWidth: 400,
-                lineHeight: 1.6,
-              }}
-            >
-              From photos to live detection — on your phone.
-            </p>
-            <Link href="/guides" className="btn-primary">
-              Start the guide
-              <IconArrowRight className="ic" />
-            </Link>
-          </div>
-
-          {/* right — the flow, big and bold, clickable */}
-          <div className="card" style={{ padding: 24 }}>
-            <div className="card-head" style={{ marginBottom: 12 }}>
-              <span className="card-title">How it flows — click a stage</span>
-            </div>
-            <PipelineDiagram stages={stages} />
-          </div>
-        </div>
+        <span
+          className="badge lime"
+          style={{ padding: "5px 12px", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}
+        >
+          Self-hosted · On-device · No cloud
+        </span>
+        <h1 className="display-hero" style={{ fontSize: "clamp(38px, 4.6vw, 62px)" }}>
+          Train your own object recognition.
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--color-text-muted)", maxWidth: 440, lineHeight: 1.6 }}>
+          From photos to live detection — on your phone.
+        </p>
+        <Link href="/guides" className="btn-primary">
+          Start the guide
+          <IconArrowRight className="ic" />
+        </Link>
       </section>
 
-      {/* ── The pipeline: seven bold rows ── */}
+      {/* ── Flow (bottom) ───────────────────────────────────────── */}
       <section style={{ marginTop: 72 }}>
-        <p className="label-micro-bold" style={{ marginBottom: 8 }}>
-          The pipeline
+        <p className="label-micro-bold" style={{ marginBottom: 16 }}>
+          The flow
         </p>
-        <div>
-          {guides.map((g) => (
-            <Link key={g.slug} href={`/guides/${g.slug}`} className="step-row">
-              <span className="num">{String(g.step).padStart(2, "0")}</span>
-              <span className="t">{g.short}</span>
-              <span className="meta">
-                <span className="badge sky">{g.time}</span>
-                <span className="go">
-                  Open
-                  <IconArrowRight className="ic s" />
-                </span>
+
+        {/* row 1 — two mini blocks */}
+        <div className="flow-mini-row">
+          {PHASES.filter((p) => !p.wide).map((phase) => {
+            const g = bySlug.get(phase.guides[0]);
+            return (
+              <Link key={phase.key} href={`/guides/${phase.guides[0]}`} className="flow-mini">
+                <div className="flow-mini-top">
+                  <span className="mono flow-num">
+                    {String(g?.step ?? 1).padStart(2, "0")}
+                  </span>
+                  <span className="badge sky">{g?.time}</span>
+                </div>
+                <span className="flow-mini-title">{phase.label}</span>
+                <span className="flow-mini-sub">{phase.blurb}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* row 2..n — full blocks */}
+        <div className="flow-blocks">
+          {PHASES.filter((p) => p.wide).map((phase) => (
+            <Link key={phase.key} href={`/guides/${phase.guides[0]}`} className="flow-block">
+              <div className="flow-block-main">
+                <div className="flow-block-head">
+                  <span className="mono flow-num">
+                    {String(bySlug.get(phase.guides[0])?.step ?? 1).padStart(2, "0")}
+                  </span>
+                  <span className="badge lime">{bySlug.get(phase.guides[0])?.time}</span>
+                </div>
+                <span className="flow-block-title">{phase.label}</span>
+                <span className="flow-block-sub">{phase.blurb}</span>
+              </div>
+              {phase.details.length > 0 && (
+                <div className="flow-details">
+                  {phase.details.map((d) => (
+                    <span key={d} className="flow-detail">{d}</span>
+                  ))}
+                </div>
+              )}
+              <span className="flow-go">
+                <IconArrowRight className="ic s" />
               </span>
             </Link>
           ))}

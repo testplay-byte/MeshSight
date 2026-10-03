@@ -1,10 +1,10 @@
 ---
-title: "Android App & APK"
+title: "Run on App"
 nav_order: 7
 parent: Guides
 ---
 
-# 📱 Guide 07 — The Android App & Getting the APK
+# 📱 Guide 07 — Run on App
 
 **Goal:** install the MeshSight app on your phone, load your model, recognize
 your objects. Includes how APKs are built (GitHub Actions — nothing heavy on
