@@ -22,9 +22,9 @@ export default function PipelineDiagram() {
         y={y - 26}
         width="116"
         height="52"
-        rx="14"
+        rx="12"
         fill="#28282f"
-        stroke="rgba(255,255,255,0.1)"
+        stroke="rgba(255,255,255,0.08)"
       />
       <text x={x} y={y - 2} textAnchor="middle" fill="#fff" fontSize="14" fontWeight="600">
         {label}
@@ -45,7 +45,7 @@ export default function PipelineDiagram() {
           y1="70"
           x2={stages[i + 1].x - 58}
           y2="70"
-          stroke="#34C781"
+          stroke="#BCFF5F"
           strokeWidth="2"
           className="flow-line"
         />
@@ -66,7 +66,7 @@ export default function PipelineDiagram() {
           y1="170"
           x2={bottom[i + 1].x - 58}
           y2="170"
-          stroke="#34C781"
+          stroke="#BCFF5F"
           strokeWidth="2"
           className="flow-line"
         />

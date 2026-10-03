@@ -30,15 +30,17 @@
 
 ### Accents
 
+Exactly three, per the Dark Neon system — never a fourth:
+
 | Token | Hex | Role |
 |-------|-----|------|
-| `accent-mint` | `#34C781` | Primary — actions, success, brand, logo gradient start |
-| `accent-mint-soft` | `#6EE7B7` | Hover states, links on dark |
-| `accent-sky` | `#5FC9FF` | Secondary — information, focus, step badges |
+| `accent-lime` | `#BCFF5F` | Primary — actions, success, brand, links, focus |
+| `accent-sky` | `#5FC9FF` | Secondary — information, step badges, live states |
 | `accent-coral` | `#FF5F7E` | Danger — errors, destructive actions only |
 
-The brand gradient is **`#34C781 → #109669`** (mint → deep emerald, diagonal),
-used on the logo tile and nowhere else.
+Hover on lime buttons goes brighter (`#D4FF99`), never a new hue. The logo
+tile keeps its own emerald gradient (`#34C781 → #109669`) — that is brand
+identity, not a UI accent, and stays fixed.
 
 ### Text
 
@@ -53,7 +55,7 @@ used on the logo tile and nowhere else.
 
 - Default border: `rgba(255,255,255,0.08)` · subtle: `0.04` · strong (overlays): `0.12`
 - Glow shadows: `0 0 20px` at 20% opacity of the relevant accent
-  (`shadow-glow-mint`, `shadow-glow-sky`, `shadow-glow-coral`)
+  (`shadow-glow-lime`, `shadow-glow-sky`, `shadow-glow-coral`)
 
 ## 3. Typography
 
@@ -79,7 +81,7 @@ Glass recipe for overlays: `bg-sidebar/90 + backdrop-blur-2xl + border-white/[0.
 Three layers, all `pointer-events-none`, behind content:
 1. **Noise** — 3% opacity fractal-noise SVG tile
 2. **Grid dots** — `radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)`, 24px cells
-3. **Orbs** — two blurred floating circles (mint 8%, sky 6%), slow `ease-in-out` drift
+3. **Orbs** — two blurred floating circles (lime 5%, sky 5%), slow `ease-in-out` drift
 
 ## 6. The logo
 
@@ -106,15 +108,14 @@ recognize it.*
 
 ## 8. Component notes
 
-- **Buttons:** primary = mint fill + `bg-base` text + glow; secondary =
-  white/4% fill + border; toggle-on = mint/10 fill + mint/25 border;
-  danger = coral tints only.
+- **Buttons:** primary = lime fill + `bg-base` text + glow; secondary =
+  sky fill; toggle-on = lime/10 fill + lime/20 border; danger = coral tints only.
 - **Timeline (guides):** vertical rail with numbered mono nodes; active =
-  filled mint, done = mint outline, upcoming = dim.
-- **Markdown articles:** h2 sections divided by hairline borders, mint
+  filled lime, done = lime outline, upcoming = dim.
+- **Markdown articles:** h2 sections divided by hairline borders, lime
   bullets, code chips on white/6%, tables with uppercase muted headers,
-  blockquotes as mint-tinted callouts.
-- **Scrollbars:** 6px, white/12% thumb, transparent track (`.custom-scrollbar`).
+  blockquotes as lime-tinted callouts.
+- **Scrollbars:** 6px, white/10% thumb, transparent track (`.custom-scrollbar`).
 
 ## 9. Anti-patterns
 
@@ -122,6 +123,6 @@ recognize it.*
 - ❌ No indigo/violet/blue as primary
 - ❌ No solid opaque overlays (always blur + transparency)
 - ❌ No `text-dim` for required content
-- ❌ No new accent colors outside mint/sky/coral
+- ❌ No new accent colors outside lime/sky/coral
 - ❌ No emoji as UI icons in production surfaces
 - ❌ No animating layout properties (width/height) on frequently-updated elements

@@ -1,12 +1,13 @@
 import Link from "next/link";
-import Logo from "@/components/Logo";
 import PipelineDiagram from "@/components/PipelineDiagram";
 import {
   GUIDE_ICONS,
   IconArrowRight,
+  IconBook,
+  IconCheck,
   IconClock,
   IconCrop,
-  IconFolder,
+  IconDownload,
   IconGithub,
   IconLayers,
   IconLock,
@@ -14,243 +15,281 @@ import {
   IconNetwork,
   IconPhoneScan,
   IconRunner,
+  IconTarget,
 } from "@/components/Icons";
 import { getGuides } from "@/lib/guides";
+
+const RELEASES = "https://github.com/testplay-byte/MeshSight/releases";
 
 const FEATURES = [
   {
     Icon: IconCrop,
     title: "One object per sample",
-    body: "A photo of five dogs becomes five training samples. The model learns your objects — not the background.",
+    body: "Five dogs in one photo become five training samples.",
   },
   {
     Icon: IconNetwork,
     title: "Classes discover variants",
-    body: "DINOv2 + UMAP + HDBSCAN split a loose class like “cat” into tight visual sub-classes the model can actually learn.",
+    body: "“cat” splits into tight visual sub-classes automatically.",
   },
   {
     Icon: IconMap,
     title: "Interactive dataset map",
-    body: "A standalone HTML constellation map: see clusters, spot outliers, judge your data at a glance before training.",
+    body: "See clusters and outliers in a standalone HTML map.",
   },
   {
     Icon: IconPhoneScan,
     title: "On-device inference",
-    body: "The Android app runs your TFLite model fully offline — live camera or gallery, boxes and segmentation masks.",
+    body: "Boxes and masks, live on your phone. Fully offline.",
   },
   {
     Icon: IconLock,
     title: "Private by design",
-    body: "Your data and weights never touch the repository. Only tools and docs are versioned; everything local stays local.",
+    body: "Data and weights never touch the repository.",
   },
   {
     Icon: IconRunner,
     title: "Zero local builds",
-    body: "GitHub Actions compiles the APK and publishes it as a release. Your machine never runs a heavy build.",
+    body: "GitHub Actions compiles the APK into Releases.",
   },
-];
-
-const REPO = [
-  { dir: "android/", desc: "Kotlin app — CameraX + TFLite", Icon: IconPhoneScan },
-  { dir: "colab/", desc: "10-stage dataset pipeline", Icon: IconLayers },
-  { dir: "scripts/", desc: "Local converters (CVAT, crop, YOLO)", Icon: IconFolder },
-  { dir: "docs/", desc: "The six guides, rendered on this site", Icon: IconGithub },
 ];
 
 export default function Home() {
   const guides = getGuides();
 
   return (
-    <div className="flex flex-col gap-20 sm:gap-24">
-      {/* ── Split hero: minimal left, flow right ─────────────────── */}
-      <section className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-        {/* left */}
-        <div className="stagger flex flex-col items-start gap-5">
-          <div className="flex items-center gap-3">
-            <Logo className="h-12 w-12 rounded-xl shadow-glow-lime" animated />
-            <span className="label-micro-bold">MeshSight</span>
-          </div>
-
-          <h1 className="text-3xl font-bold leading-[1.15] text-white sm:text-4xl lg:text-[2.75rem]">
-            Train your own
-            <br />
-            object recognition.
-          </h1>
-
-          <p className="max-w-md text-sm leading-relaxed text-text-secondary">
-            From raw photos to live detection on your phone — annotate, split,
-            cluster, train, run. Fully self-hosted, fully yours.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Link
-              href="/guides"
-              className="flex h-11 items-center gap-2 rounded-xl bg-accent-lime px-5 text-sm font-medium text-bg-base shadow-glow-lime transition-all duration-300 hover:bg-accent-lime-bright"
-            >
-              Start the guide
-              <IconArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="https://github.com/testplay-byte/MeshSight/releases"
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-11 items-center gap-2 rounded-xl border border-line-strong bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition-all duration-300 hover:border-white/25 hover:bg-white/[0.08]"
-            >
-              Get the APK
-            </a>
-          </div>
-
-          <div className="flex items-center gap-4 pt-2">
-            <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-accent-lime">
-              <span className="live-dot" />
-              Self-hosted
-            </span>
-            <span className="h-3 w-px bg-line" />
-            <span className="text-[11px] font-medium uppercase tracking-widest text-text-muted">
-              On-device
-            </span>
-            <span className="h-3 w-px bg-line" />
-            <span className="text-[11px] font-medium uppercase tracking-widest text-text-muted">
-              No cloud
-            </span>
+    <div className="flex flex-col">
+      {/* ── Page title row ───────────────────────────────────────── */}
+      <div className="page-title">
+        <div>
+          <h1>MeshSight</h1>
+          <div className="sub">
+            Train your own object recognition — from photos to phone.
           </div>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="live-dot" />
+          <span className="live-lbl">Self-hosted</span>
+        </div>
+      </div>
 
-        {/* right: the flow */}
-        <div className="fade-up card relative overflow-hidden p-5 sm:p-7" style={{ animationDelay: "0.15s" }}>
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-accent-lime/5 blur-[60px]" />
-          <div className="mb-4 flex items-center gap-2">
-            <span className="icon-badge icon-badge-lime">
-              <IconLayers className="h-3.5 w-3.5" />
-            </span>
-            <span className="label-micro-bold">How it flows</span>
+      {/* ── Stat cards ───────────────────────────────────────────── */}
+      <div className="grid g4 stagger">
+        <div className="stat-card">
+          <div className="deco-glow" />
+          <div className="top">
+            <div className="icon-badge lime">
+              <IconTarget className="ic s" />
+            </div>
+            <span className="lbl">Pipeline</span>
+          </div>
+          <div>
+            <div className="val">6 steps</div>
+            <div className="sub lime-t">photos → phone</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="top">
+            <div className="icon-badge sky">
+              <IconLayers className="ic s" />
+            </div>
+            <span className="lbl">Colab stages</span>
+          </div>
+          <div>
+            <div className="val">10</div>
+            <div className="sub sky-t">split · cluster · map</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="top">
+            <div className="icon-badge sky">
+              <IconPhoneScan className="ic s" />
+            </div>
+            <span className="lbl">App</span>
+          </div>
+          <div>
+            <div className="val">Android 12+</div>
+            <div className="sub muted-t">CameraX · TFLite</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="top">
+            <div className="icon-badge lime">
+              <IconLock className="ic s" />
+            </div>
+            <span className="lbl">Your data</span>
+          </div>
+          <div>
+            <div className="val">Local</div>
+            <div className="sub lime-t">never uploaded</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Status cards ─────────────────────────────────────────── */}
+      <div className="grid g3 mt stagger">
+        <div className="status-card good">
+          <IconCheck className="ic lime-t" />
+          <div>
+            <div className="t">APK builds in CI</div>
+            <div className="d">Every change ships a debug build to Releases.</div>
+          </div>
+        </div>
+        <div className="status-card info">
+          <IconLayers className="ic sky-t" />
+          <div>
+            <div className="t">Guides cover everything</div>
+            <div className="d">Annotate → cluster → train → run, step by step.</div>
+          </div>
+        </div>
+        <div className="status-card warn">
+          <IconClock className="ic coral-t" />
+          <div>
+            <div className="t">Training needs a GPU</div>
+            <div className="d">Colab's free T4 handles hobby datasets fine.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Flow + actions ───────────────────────────────────────── */}
+      <div className="two-col mt">
+        <div className="card">
+          <div className="deco-glow" />
+          <div className="card-head">
+            <div className="icon-badge sky">
+              <IconLayers className="ic s" />
+            </div>
+            <span className="card-title">How it flows</span>
           </div>
           <PipelineDiagram />
-          <p className="mt-4 text-center font-mono text-[11px] leading-relaxed text-text-dim">
-            photos → annotate → split → cluster → yolo → train → tflite → phone
-          </p>
         </div>
-      </section>
-
-      {/* ── Why ──────────────────────────────────────────────────── */}
-      <section className="flex flex-col gap-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white sm:text-2xl">
-              Why MeshSight?
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
-              Generic models can't see what you care about.
-            </p>
+        <div className="card">
+          <div className="card-head">
+            <div className="icon-badge lime">
+              <IconArrowRight className="ic s" />
+            </div>
+            <span className="card-title">Start here</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <Link href="/guides" className="btn-primary">
+              <IconBook />
+              Open the guides
+            </Link>
+            <a href={RELEASES} target="_blank" rel="noreferrer" className="btn-secondary">
+              <IconDownload className="ic s" />
+              Download the APK
+            </a>
+            <a
+              href="https://github.com/testplay-byte/MeshSight"
+              target="_blank"
+              rel="noreferrer"
+              className="btn-ghost"
+              style={{ alignSelf: "center" }}
+            >
+              <IconGithub className="ic xs" />
+              Browse the source on GitHub
+            </a>
+          </div>
+          <div style={{ marginTop: 20 }}>
+            <div className="kv-row">
+              <span className="k">Collect &amp; annotate</span>
+              <span className="v">guide 01</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">Split &amp; cluster in Colab</span>
+              <span className="v sky">guide 02–03</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">Train &amp; export TFLite</span>
+              <span className="v">guide 04–05</span>
+            </div>
+            <div className="kv-row" style={{ marginBottom: 0 }}>
+              <span className="k">Run on your phone</span>
+              <span className="v lime">guide 06</span>
+            </div>
           </div>
         </div>
-        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      </div>
+
+      {/* ── Why (compact) ────────────────────────────────────────── */}
+      <div className="card mt">
+        <div className="card-head">
+          <div className="icon-badge lime">
+            <IconTarget className="ic s" />
+          </div>
+          <span className="card-title">Why MeshSight</span>
+        </div>
+        <div className="grid g3 stagger">
           {FEATURES.map(({ Icon, title, body }) => (
-            <div
-              key={title}
-              className="card group flex flex-col gap-3 p-5 transition-all duration-300 hover:border-accent-lime/25 hover:bg-bg-elevated/40"
-            >
-              <span className="icon-badge icon-badge-lime transition-colors group-hover:bg-accent-lime/10">
-                <Icon className="h-3.5 w-3.5" />
-              </span>
-              <h3 className="text-sm font-semibold text-white">{title}</h3>
-              <p className="text-[13px] leading-relaxed text-text-muted">
-                {body}
-              </p>
+            <div key={title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <div className="icon-badge sky" style={{ marginTop: 2 }}>
+                <Icon className="ic s" />
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+                  {title}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: 2, lineHeight: 1.5 }}>
+                  {body}
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* ── The six steps ────────────────────────────────────────── */}
-      <section className="flex flex-col gap-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white sm:text-2xl">
-              The six steps
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
-              Each guide produces exactly what the next expects.
-            </p>
-          </div>
-          <Link
-            href="/guides"
-            className="hidden items-center gap-1.5 text-sm font-medium text-accent-lime transition-colors hover:text-accent-lime-bright sm:flex"
-          >
-            All guides
-            <IconArrowRight className="h-3.5 w-3.5" />
-          </Link>
+      <div className="page-title mt" style={{ marginBottom: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 16 }}>The six steps</h1>
+          <div className="sub">Each guide produces what the next expects.</div>
         </div>
-
-        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {guides.map((g) => {
-            const Icon = GUIDE_ICONS[g.slug];
-            return (
-              <Link
-                key={g.slug}
-                href={`/guides/${g.slug}`}
-                className="card group flex flex-col gap-3 p-5 transition-all duration-300 hover:border-accent-lime/25 hover:bg-bg-elevated/40"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="icon-badge icon-badge-sky">
-                    {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
-                  </span>
-                  <span className="data-mono text-[11px] font-semibold text-text-dim">
-                    STEP {String(g.step).padStart(2, "0")}
-                  </span>
-                </div>
-                <h3 className="text-sm font-semibold text-white">{g.short}</h3>
-                <p className="flex-1 text-[13px] leading-relaxed text-text-muted">
-                  {g.description}
-                </p>
-                <div className="flex items-center justify-between border-t border-line-subtle pt-3">
-                  <span className="flex items-center gap-1.5 text-[11px] text-text-dim">
-                    <IconClock className="h-3 w-3" />
-                    {g.time}
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-accent-lime opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    Open
-                    <IconArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <Link
-          href="/guides"
-          className="flex items-center justify-center gap-1.5 text-sm font-medium text-accent-lime transition-colors hover:text-accent-lime-bright sm:hidden"
-        >
-          View all guides
-          <IconArrowRight className="h-3.5 w-3.5" />
+        <Link href="/guides" className="btn-ghost">
+          All guides
+          <IconArrowRight className="ic xs" />
         </Link>
-      </section>
-
-      {/* ── Repo map ─────────────────────────────────────────────── */}
-      <section className="card p-6 sm:p-8">
-        <div className="mb-5 flex items-center gap-2">
-          <span className="icon-badge icon-badge-lime">
-            <IconFolder className="h-3.5 w-3.5" />
-          </span>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
-            In the repository
-          </h2>
-        </div>
-        <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-          {REPO.map(({ dir, desc, Icon }) => (
-            <div key={dir} className="flex items-center gap-3">
-              <span className="text-text-dim">
-                <Icon className="h-3.5 w-3.5" />
-              </span>
-              <span className="data-mono text-[13px] font-semibold text-accent-lime-bright">
-                {dir}
-              </span>
-              <span className="text-[13px] text-text-muted">{desc}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
+      <div className="grid g3 stagger">
+        {guides.map((g) => {
+          const Icon = GUIDE_ICONS[g.slug];
+          return (
+            <Link
+              key={g.slug}
+              href={`/guides/${g.slug}`}
+              className="stat-card"
+              style={{ textDecoration: "none" }}
+            >
+              <div className="top">
+                <div className="icon-badge lime">
+                  {Icon ? <Icon className="ic s" /> : null}
+                </div>
+                <span className="lbl">Step {g.step}</span>
+                <span className="badge sky" style={{ marginLeft: "auto" }}>
+                  <IconClock className="ic xs" />
+                  {g.time}
+                </span>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>
+                  {g.short}
+                </div>
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: "var(--color-text-muted)", marginTop: 4 }}
+                >
+                  {g.outputs.join(" · ")}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

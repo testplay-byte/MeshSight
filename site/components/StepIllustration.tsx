@@ -5,7 +5,7 @@
  */
 
 const S = {
-  stroke: "#34C781",
+  stroke: "#BCFF5F",
   stroke2: "#5FC9FF",
   dim: "rgba(255,255,255,0.18)",
   fill: "rgba(52,199,129,0.08)",
@@ -130,7 +130,7 @@ function Convert() {
     <Frame label="Cluster folders converted into a YOLO dataset">
       {/* folder stack */}
       <path d="M16 44h24l6 8h26a4 4 0 0 1 4 4v44a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V48a4 4 0 0 1 4-4Z" stroke={S.stroke} strokeWidth="2" fill={S.fill} />
-      <text x="38" y="80" textAnchor="middle" fill="#34C781" fontSize="10" fontFamily="ui-monospace, monospace">cat_C1</text>
+      <text x="38" y="80" textAnchor="middle" fill="#BCFF5F" fontSize="10" fontFamily="ui-monospace, monospace">cat_C1</text>
       <path d="M84 75h20m-6-6 6 6-6 6" stroke={S.dim} strokeWidth="2" />
       {/* dataset grid */}
       <g>

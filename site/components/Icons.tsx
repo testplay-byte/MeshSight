@@ -185,6 +185,9 @@ export const IconClose = (p: IconProps) => (
   </Svg>
 );
 
+/** Alias used by the design page's rule rows */
+export const IconX = IconClose;
+
 export const IconSearch = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="6.5" />
@@ -247,6 +250,34 @@ export const IconExternalLink = (p: IconProps) => (
     <path d="M14 4h6v6" />
     <path d="M20 4 11 13" />
     <path d="M18 14v5a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 19V7.5A1.5 1.5 0 0 1 5.5 6H10" />
+  </Svg>
+);
+
+/** Dashboard — four tiles (home nav) */
+export const IconDash = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="7" height="9" rx="1" />
+    <rect x="14" y="3" width="7" height="5" rx="1" />
+    <rect x="14" y="12" width="7" height="9" rx="1" />
+    <rect x="3" y="16" width="7" height="5" rx="1" />
+  </Svg>
+);
+
+/** Target / focus */
+export const IconTarget = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="5" />
+    <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+  </Svg>
+);
+
+/** Alert triangle — warn status */
+export const IconAlert = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z" />
+    <path d="M12 9v4" />
+    <path d="M12 17h.01" />
   </Svg>
 );
 
