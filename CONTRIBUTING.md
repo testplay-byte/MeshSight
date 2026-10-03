@@ -13,7 +13,7 @@ belongs and how to test changes.
 
 1. [README.md](README.md) — what the project is
 2. [ARCHITECTURE.md](ARCHITECTURE.md) — how the pieces fit + data formats
-3. The docs guide matching the area you're touching (`docs/01…06`)
+3. The docs guide matching the area you're touching (`docs/01…07`)
 
 ## 2. Structure rules
 
@@ -103,5 +103,5 @@ meshsight/
   shader; benchmark first (most phones are fine).
 - App could offer auto-detection of class count mismatch between the loaded
   labels file and model output.
-- `docs/05` training/export is the thinnest link — a real Colab notebook
+- `docs/06` training/export is the thinnest link — a real Colab notebook
   template for training (like colab/ has for preprocessing) would close it.

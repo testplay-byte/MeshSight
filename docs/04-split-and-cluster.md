@@ -4,7 +4,7 @@ nav_order: 4
 parent: Guides
 ---
 
-# ✂️ Guide 03 — Splitting & Clustering: How It Works
+# ✂️ Guide 04 — Splitting & Clustering: How It Works
 
 **Goal:** understand the two ideas that make MeshSight datasets better than
 what you started with. Read this once; you'll never have to read the code
@@ -90,4 +90,4 @@ faster and recognizes your objects, not your average stock photo.
 Rule: change one knob at a time, re-run stages 06–07, and read the
 clustering table + visual map before touching anything else.
 
-**Next →** [Guide 04: convert the organized dataset to YOLO format](04-convert-dataset.md)
+**Next →** [Guide 05: convert the organized dataset to YOLO format](05-convert-dataset.md)

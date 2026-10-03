@@ -4,7 +4,7 @@ nav_order: 5
 parent: Guides
 ---
 
-# 🗂️ Guide 04 — Convert the Organized Dataset to YOLO Format
+# 🗂️ Guide 05 — Convert the Organized Dataset to YOLO Format
 
 **Goal:** turn the `organized_dataset.zip` from the Colab pipeline into a
 training-ready YOLO-segmentation dataset with `dataset.yaml` and `classes.txt`.
@@ -15,7 +15,7 @@ This runs **on your machine** — no Colab needed.
 
 - Python 3.9+ with Pillow (`pip install Pillow`) — the script installs it
   itself on first run if missing.
-- `organized_dataset.zip` downloaded from Guide 02.
+- `organized_dataset.zip` downloaded from Guide 03.
 
 ## Step 1 — Unzip
 
@@ -76,7 +76,7 @@ ls yolo_dataset/images/val   | wc -l
 head -1 yolo_dataset/labels/train/<some>.txt
 
 # spot-check: open 3 images in your viewer, boxes should be *on* the objects.
-# (For a visual check, Ultralytics' dataset explorer in Guide 05 does this for you.)
+# (For a visual check, Ultralytics' dataset explorer in Guide 06 does this for you.)
 ```
 
 Red flags: `No image+JSON pairs found` → wrong folder layout; empty label
@@ -91,4 +91,4 @@ but the app displays them uppercase.
 # or just use the data.zip the script already wrote next to it
 ```
 
-**Next →** [Guide 05: train the model and export TFLite](05-train-and-export.md)
+**Next →** [Guide 06: train the model and export TFLite](06-train-and-export.md)

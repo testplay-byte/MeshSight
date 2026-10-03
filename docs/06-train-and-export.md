@@ -4,9 +4,9 @@ nav_order: 6
 parent: Guides
 ---
 
-# 🧠 Guide 05 — Train in Colab & Export to TFLite
+# 🧠 Guide 06 — Train in Colab & Export to TFLite
 
-**Goal:** take `data.zip` from Guide 04, train a YOLOv8-se segmentation
+**Goal:** take `data.zip` from Guide 05, train a YOLOv8-se segmentation
 model on it in Colab, and export a `.tflite` that the MeshSight Android app
 runs directly.
 
@@ -17,7 +17,7 @@ a known TODO, see CONTRIBUTING.md.)
 ## Step 1 — New Colab notebook, GPU runtime
 
 **Runtime → Change runtime type → T4 GPU.** Upload `data.zip` to your Drive
-(e.g. `MyDrive/MeshSight/DATA/data.zip`) — same Drive layout as Guide 02.
+(e.g. `MyDrive/MeshSight/DATA/data.zip`) — same Drive layout as Guide 03.
 
 ## Step 2 — Install & mount
 
@@ -70,7 +70,7 @@ Typical time: ~100 epochs on a few hundred images ≈ 10–30 min on T4.
 > model.val()
 > ```
 > `mAP50 > 0.8` is a healthy target for small custom datasets. If poor:
-> add data (Guide 01), fix outliers (Guide 03), not epochs.
+> add data (Guide 02), fix outliers (Guide 04), not epochs.
 
 ## Step 5 — Export to TFLite (the critical flags)
 
@@ -97,12 +97,12 @@ This matches what `ModelManager` auto-detects: a boxes tensor `[1, 4+C+32, N]`
 
 - Download `best_float32.tflite` (rename to something friendly, e.g.
   `my_model_v1.tflite`).
-- Download `classes.txt` from the dataset folder (Guide 04) — **same session,
+- Download `classes.txt` from the dataset folder (Guide 05) — **same session,
   same class order**, or the app's labels will mismatch by index.
 
 ## Step 7 — Load into the app
 
-Skip to [Guide 06](06-android-app.md): build the APK once via GitHub Actions
+Skip to [Guide 07](07-android-app.md): build the APK once via GitHub Actions
 (or install it), then **Settings → Swap Active Model → pick the .tflite**,
 **Settings → Load Class Labels → pick classes.txt**. That's the whole loop:
 

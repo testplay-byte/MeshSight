@@ -34,15 +34,23 @@ type Meta = {
 };
 
 const META: Record<string, Meta> = {
-  "01-collect-and-annotate": {
-    short: "Collect & Annotate",
+  "01-collect-and-organize": {
+    short: "Collect & Organize",
     description:
-      "Gather varied photos and trace polygons around every object with LabelMe or CVAT.",
+      "Decide your classes, gather varied photos, and sort them into per-class folders.",
     time: "30–60 min",
-    inputs: ["Raw photos of your objects"],
+    inputs: ["Your camera / photo sources"],
+    outputs: ["photos/ folder tree", "One folder per class"],
+  },
+  "02-annotate": {
+    short: "Annotate",
+    description:
+      "Trace polygons around every object with LabelMe or CVAT and package ALL.zip.",
+    time: "60–120 min",
+    inputs: ["photos/ folder tree", "LabelMe or CVAT"],
     outputs: ["ANNOTATED/ folder", "ALL.zip archive"],
   },
-  "02-run-colab-pipeline": {
+  "03-run-colab-pipeline": {
     short: "Run Colab Pipeline",
     description:
       "Upload the archive to Drive, run the 10 stages in Colab, download the organized dataset.",
@@ -50,7 +58,7 @@ const META: Record<string, Meta> = {
     inputs: ["ALL.zip on Google Drive", "colab/ scripts"],
     outputs: ["organized_dataset.zip", "Visual_Map.html"],
   },
-  "03-split-and-cluster": {
+  "04-split-and-cluster": {
     short: "Split & Cluster",
     description:
       "Understand the two core ideas: one crop per object, and classes split into visual variants.",
@@ -58,7 +66,7 @@ const META: Record<string, Meta> = {
     inputs: ["Curiosity"],
     outputs: ["Understanding of stages 04 + 07"],
   },
-  "04-convert-dataset": {
+  "05-convert-dataset": {
     short: "Convert to YOLO",
     description:
       "Turn the organized folders into a train/val YOLO-se dataset with dataset.yaml + classes.txt.",
@@ -66,7 +74,7 @@ const META: Record<string, Meta> = {
     inputs: ["organized_dataset/ folders"],
     outputs: ["yolo_dataset/", "dataset.yaml", "classes.txt", "data.zip"],
   },
-  "05-train-and-export": {
+  "06-train-and-export": {
     short: "Train & Export",
     description:
       "Fine-tune YOLOv8-se on the dataset in Colab and export a TFLite model the app accepts.",
@@ -74,7 +82,7 @@ const META: Record<string, Meta> = {
     inputs: ["data.zip", "dataset.yaml"],
     outputs: ["best_float32.tflite"],
   },
-  "06-android-app": {
+  "07-android-app": {
     short: "Android App",
     description:
       "Grab the CI-built APK from Releases, load your model and labels, and recognize objects live.",
@@ -143,7 +151,9 @@ export function getGuides(): Guide[] {
       inputs: meta.inputs,
       outputs: meta.outputs,
       headings: extractHeadings(content),
-      content,
+      // The Goal paragraph is shown in the page header — strip it from the
+      // article body to avoid duplication.
+      content: content.replace(/^\s*\*\*Goal:\*\*[^\n]*(?:\n[^\n]+)*?\n\s*\n/, "").trimStart(),
     };
   });
 }

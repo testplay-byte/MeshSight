@@ -7,13 +7,11 @@ import {
   IconBook,
   IconDash,
   IconGithub,
-  IconPalette,
 } from "@/components/Icons";
 
 const NAV = [
   { href: "/", label: "Home", Icon: IconDash },
   { href: "/guides", label: "Guides", Icon: IconBook },
-  { href: "/design", label: "Design", Icon: IconPalette },
 ];
 
 const GITHUB = "https://github.com/testplay-byte/MeshSight";
@@ -33,7 +31,7 @@ export default function Frame({ children }: { children: React.ReactNode }) {
       <div className="orb orb-sky" />
       <div className="orb orb-coral" />
 
-      {/* App frame (§4.1) */}
+      {/* App frame (§4.1) — full-bleed, edge to edge */}
       <div className="frame noise-bg grid-pattern">
         <div className="body-row">
           {/* ── Sidebar (desktop, §16.1) ─────────────────────────── */}
@@ -75,7 +73,7 @@ export default function Frame({ children }: { children: React.ReactNode }) {
               <h4>At a glance</h4>
               <div className="kv-row">
                 <span className="k">Pipeline steps</span>
-                <span className="v">6</span>
+                <span className="v">7</span>
               </div>
               <div className="kv-row">
                 <span className="k">Colab stages</span>

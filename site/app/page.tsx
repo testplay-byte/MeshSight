@@ -84,7 +84,7 @@ export default function Home() {
             <span className="lbl">Pipeline</span>
           </div>
           <div>
-            <div className="val">6 steps</div>
+            <div className="val">7 steps</div>
             <div className="sub lime-t">photos → phone</div>
           </div>
         </div>
@@ -198,20 +198,24 @@ export default function Home() {
           </div>
           <div style={{ marginTop: 20 }}>
             <div className="kv-row">
-              <span className="k">Collect &amp; annotate</span>
+              <span className="k">Collect &amp; organize</span>
               <span className="v">guide 01</span>
             </div>
             <div className="kv-row">
-              <span className="k">Split &amp; cluster in Colab</span>
-              <span className="v sky">guide 02–03</span>
+              <span className="k">Annotate</span>
+              <span className="v">guide 02</span>
             </div>
             <div className="kv-row">
-              <span className="k">Train &amp; export TFLite</span>
-              <span className="v">guide 04–05</span>
+              <span className="k">Split &amp; cluster in Colab</span>
+              <span className="v sky">guide 03–04</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">Convert &amp; train</span>
+              <span className="v">guide 05–06</span>
             </div>
             <div className="kv-row" style={{ marginBottom: 0 }}>
               <span className="k">Run on your phone</span>
-              <span className="v lime">guide 06</span>
+              <span className="v lime">guide 07</span>
             </div>
           </div>
         </div>
@@ -244,10 +248,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── The six steps ────────────────────────────────────────── */}
+      {/* ── The seven steps ────────────────────────────────────────── */}
       <div className="page-title mt" style={{ marginBottom: 12 }}>
         <div>
-          <h1 style={{ fontSize: 16 }}>The six steps</h1>
+          <h1 style={{ fontSize: 16 }}>The seven steps</h1>
           <div className="sub">Each guide produces what the next expects.</div>
         </div>
         <Link href="/guides" className="btn-ghost">

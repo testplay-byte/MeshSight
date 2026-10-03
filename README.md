@@ -50,17 +50,19 @@ loop — data → model → app — yours:
 
 ## Quick start
 
-1. **Collect & annotate** images with polygon tools →
-   [docs/01](docs/01-collect-and-annotate.md)
-2. **Run the Colab pipeline** (split, cluster, organize, visualize) →
-   [docs/02](docs/02-run-colab-pipeline.md) ·
-   [docs/03](docs/03-split-and-cluster.md)
-3. **Convert to YOLO format** with `scripts/labelme_to_yolo.py` →
-   [docs/04](docs/04-convert-dataset.md)
-4. **Train & export** a YOLOv8-se model to `.tflite` in Colab →
-   [docs/05](docs/05-train-and-export.md)
-5. **Build & use the app** — APK from GitHub Actions, load model + labels →
-   [docs/06](docs/06-android-app.md)
+1. **Collect & organize** photos into per-class folders →
+   [docs/01](docs/01-collect-and-organize.md)
+2. **Annotate** every object with polygons (LabelMe / CVAT) →
+   [docs/02](docs/02-annotate.md)
+3. **Run the Colab pipeline** (split, cluster, organize, visualize) →
+   [docs/03](docs/03-run-colab-pipeline.md) ·
+   [docs/04](docs/04-split-and-cluster.md)
+4. **Convert to YOLO format** with `scripts/labelme_to_yolo.py` →
+   [docs/05](docs/05-convert-dataset.md)
+5. **Train & export** a YOLOv8-se model to `.tflite` in Colab →
+   [docs/06](docs/06-train-and-export.md)
+6. **Build & use the app** — APK from Releases, load model + labels →
+   [docs/07](docs/07-android-app.md)
 
 New to the codebase? Read [ARCHITECTURE.md](ARCHITECTURE.md) for how the
 pieces fit together, and [CONTRIBUTING.md](CONTRIBUTING.md) for the rules.

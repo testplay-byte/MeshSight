@@ -283,10 +283,11 @@ export const IconAlert = (p: IconProps) => (
 
 /** Guide icon lookup by slug */
 export const GUIDE_ICONS: Record<string, (p: IconProps) => React.ReactNode> = {
-  "01-collect-and-annotate": IconCamera,
-  "02-run-colab-pipeline": IconCloudRun,
-  "03-split-and-cluster": IconScatter,
-  "04-convert-dataset": IconDatabase,
-  "05-train-and-export": IconChip,
-  "06-android-app": IconPhoneScan,
+  "01-collect-and-organize": IconCamera,
+  "02-annotate": IconPolygon,
+  "03-run-colab-pipeline": IconCloudRun,
+  "04-split-and-cluster": IconScatter,
+  "05-convert-dataset": IconDatabase,
+  "06-train-and-export": IconChip,
+  "07-android-app": IconPhoneScan,
 };

@@ -28,8 +28,35 @@ function Frame({ children, label }: { children: React.ReactNode; label: string }
   );
 }
 
-/* 01 — Collect & annotate: photo with polygon trace */
+/* 01 — Collect & organize: source photos sorted into class folders */
 function Collect() {
+  return (
+    <Frame label="Photos being sorted into one folder per class">
+      {/* camera */}
+      <rect x="14" y="46" width="64" height="50" rx="8" stroke={S.dim} strokeWidth="2" />
+      <circle cx="46" cy="71" r="13" stroke={S.stroke} strokeWidth="2" />
+      <circle cx="46" cy="71" r="5" fill={S.stroke} stroke="none" />
+      <rect x="22" y="38" width="18" height="8" rx="3" stroke={S.dim} strokeWidth="2" />
+      {/* arrow */}
+      <path d="M88 71h24m-8-8 8 8-8 8" stroke={S.dim} strokeWidth="2" />
+      {/* folder tree */}
+      <path d="M124 38h34l7 10h38a4 4 0 0 1 4 4v58a4 4 0 0 1-4 4h-79a4 4 0 0 1-4-4V42a4 4 0 0 1 4-4Z" stroke={S.stroke} strokeWidth="2" fill={S.fill} />
+      <path d="M124 56h83" stroke={S.stroke} strokeWidth="1.4" opacity="0.5" />
+      <text x="134" y="76" fill="#BCFF5F" fontSize="10" fontFamily="ui-monospace, monospace">photos/</text>
+      <text x="142" y="92" fill="rgba(200,200,212,0.85)" fontSize="9.5" fontFamily="ui-monospace, monospace">cat/  ·  62 jpg</text>
+      <text x="142" y="106" fill="rgba(200,200,212,0.85)" fontSize="9.5" fontFamily="ui-monospace, monospace">hand/ · 48 jpg</text>
+      <circle cx="132" cy="88" r="2" fill={S.stroke2} />
+      <circle cx="132" cy="102" r="2" fill={S.stroke2} />
+      {/* note */}
+      <text x="240" y="70" fill="rgba(136,136,160,0.9)" fontSize="9" fontFamily="ui-monospace, monospace">variety &gt;</text>
+      <text x="240" y="82" fill="rgba(136,136,160,0.9)" fontSize="9" fontFamily="ui-monospace, monospace">volume</text>
+      <path d="M236 92c8 6 20 6 28 0" stroke={S.stroke2} strokeWidth="1.6" strokeDasharray="3 3" />
+    </Frame>
+  );
+}
+
+/* 02 — Annotate: polygon trace over an object + label chip */
+function Annotate() {
   return (
     <Frame label="A photo being annotated with a polygon around a cat">
       {/* photo */}
@@ -223,12 +250,13 @@ function Phone() {
 }
 
 const MAP: Record<string, () => React.ReactNode> = {
-  "01-collect-and-annotate": Collect,
-  "02-run-colab-pipeline": Colab,
-  "03-split-and-cluster": SplitCluster,
-  "04-convert-dataset": Convert,
-  "05-train-and-export": Train,
-  "06-android-app": Phone,
+  "01-collect-and-organize": Collect,
+  "02-annotate": Annotate,
+  "03-run-colab-pipeline": Colab,
+  "04-split-and-cluster": SplitCluster,
+  "05-convert-dataset": Convert,
+  "06-train-and-export": Train,
+  "07-android-app": Phone,
 };
 
 export default function StepIllustration({ slug }: { slug: string }) {

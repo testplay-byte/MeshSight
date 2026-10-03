@@ -36,7 +36,7 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
         <div>
           <h1>Guides</h1>
           <div className="sub">
-            Six steps, one flow — each produces what the next expects.
+            Seven steps, one flow — each produces what the next expects.
           </div>
         </div>
         <div className="kp-field" style={{ width: 280, maxWidth: "100%" }}>
@@ -128,7 +128,7 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
             </div>
             <h3>No steps match</h3>
             <p style={{ fontSize: 13 }}>
-              Try a different word — or clear the search to see all six steps.
+              Try a different word — or clear the search to see all seven steps.
             </p>
             <button
               className="btn-secondary"
@@ -188,7 +188,7 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
       <div className="status-card good mt">
         <IconCheck className="ic lime-t" />
         <div>
-          <div className="t">Finished all six?</div>
+          <div className="t">Finished all seven?</div>
           <div className="d">
             Your model is running on your phone — the{" "}
             <a

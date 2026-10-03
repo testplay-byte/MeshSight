@@ -1,5 +1,5 @@
 /**
- * Animated pipeline diagram: the six stages of MeshSight with flowing
+ * Animated pipeline diagram: the seven stages of MeshSight with flowing
  * connection lines. Pure SVG + CSS — no runtime animation library needed.
  */
 export default function PipelineDiagram() {

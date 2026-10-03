@@ -4,7 +4,7 @@ nav_order: 3
 parent: Guides
 ---
 
-# ▶️ Guide 02 — Run the Colab Pipeline
+# ▶️ Guide 03 — Run the Colab Pipeline
 
 **Goal:** upload your annotated dataset to Google Drive, run the 10 pipeline
 stages in Colab, and download the organized dataset + interactive visual map.
@@ -12,12 +12,12 @@ stages in Colab, and download the organized dataset + interactive visual map.
 Everything here lives in the [`colab/`](../colab/) folder of this repo. The
 pipeline takes a zip of per-class image+annotation folders and returns those
 images sorted into **visually tight sub-classes** (see
-[Guide 03](03-split-and-cluster.md) for *why* that matters).
+[Guide 04](04-split-and-cluster.md) for *why* that matters).
 
 ## Step 1 — Upload to Google Drive
 
 1. In Google Drive, create: `MyDrive/MeshSight/DATA/`
-2. Upload `ALL.zip` (from Guide 01) there.
+2. Upload `ALL.zip` (from Guide 02) there.
 
 ## Step 2 — Open Colab & upload the scripts
 
@@ -87,7 +87,7 @@ Unzip `organized_dataset.zip` and open `Visual_Map.html` in a browser.
 Every image is a node; similar images sit close; clusters share colors;
 outliers pulse red. Explore before trusting the folders — this is your
 quality gate. If a cluster looks wrong, the fix is usually in the *annotations*
-(Guide 01) or the clustering knobs in `config.py`.
+(Guide 02) or the clustering knobs in `config.py`.
 
-**Next →** [Guide 03 explains what just happened](03-split-and-cluster.md),
-then [Guide 04 converts it to a training dataset](04-convert-dataset.md).
+**Next →** [Guide 04 explains what just happened](04-split-and-cluster.md),
+then [Guide 05 converts it to a training dataset](05-convert-dataset.md).

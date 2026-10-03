@@ -41,7 +41,7 @@ change something.
 │  scripts/labelme_to_yolo.py ──▶ yolo_dataset/ (YOLO-se format)      │
 │       images/train|val + labels/train|val + dataset.yaml + classes.txt
 │                                                                     │
-│  (Colab again) docs/05: ultralytics YOLOv8-seg train ──▶ best.pt    │
+│  (Colab again) docs/06: ultralytics YOLOv8-seg train ──▶ best.pt    │
 │                          ──▶ export ──▶ best_float32.tflite          │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │  .tflite (+ classes.txt)  [manual copy]

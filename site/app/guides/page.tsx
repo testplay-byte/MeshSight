@@ -5,7 +5,7 @@ import { getGuides } from "@/lib/guides";
 export const metadata: Metadata = {
   title: "Guides",
   description:
-    "The MeshSight workflow, start to finish — six steps from raw photos to live detection on your phone.",
+    "The MeshSight workflow, start to finish — seven steps from raw photos to live detection on your phone.",
 };
 
 export default function GuidesPage() {

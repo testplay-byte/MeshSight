@@ -166,13 +166,12 @@ export default async function GuidePage({
       </div>
 
       {/* ── Illustration (hidden on mobile) ──────────────────────── */}
-      <div className="card mb" style={{ display: "none" }} id="step-illo">
+      <div className="card mb illo-wrap">
         <StepIllustration slug={guide.slug} />
       </div>
-      <style>{`@media(min-width:640px){#step-illo{display:block}}`}</style>
 
       {/* ── Article + TOC ────────────────────────────────────────── */}
-      <div style={{ display: "grid", gap: 32, gridTemplateColumns: "minmax(0,1fr)" }} id="article-grid">
+      <div className="article-grid">
         <div className="md">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -194,11 +193,11 @@ export default async function GuidePage({
             {guide.content}
           </ReactMarkdown>
         </div>
-        <aside style={{ display: "none" }} id="toc-col">
+        <aside className="toc-col">
           <Toc headings={guide.headings} />
         </aside>
       </div>
-      <style>{`@media(min-width:1280px){#article-grid{grid-template-columns:minmax(0,1fr) 208px}#toc-col{display:block}}`}</style>
+      <style>{`@media(min-width:1280px){.article-grid{grid-template-columns:minmax(0,1fr) 208px}}`}</style>
 
       {/* ── Prev / next ──────────────────────────────────────────── */}
       <nav style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 32, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
