@@ -142,11 +142,25 @@ When you save, LabelMe writes `cat_001.json` right beside
 4. Convert it to LabelMe JSON:
 
 ```bash
-python scripts/cvat_xml_to_labelme.py "C:\Users\YOUR_NAME\Downloads\export.xml" "C:\Users\YOUR_NAME\path\data\ANNOTATED\cat"
+python scripts/cvat_xml_to_labelme.py "C:\Users\YOUR_NAME\Downloads\export.xml" "C:\Users\YOUR_NAME\path\data\ANNOTATED_STAGING"
 ```
 
-Run the command once per class folder, or point the output at a folder and
-move the JSON files into the right class sub-folder afterwards.
+The converter writes **one JSON per image containing every label's polygons**
+— it does not filter by class. So convert **once**, into a flat staging folder.
+Then open each `<image>.json`, look at its `label` field, and move the file into
+the matching class sub-folder next to its photo:
+
+```bash
+mkdir data\ANNOTATED\cat
+mkdir data\ANNOTATED\hand
+copy data\ANNOTATED_STAGING\*.jpg  data\ANNOTATED\cat\
+copy data\ANNOTATED_STAGING\*.json data\ANNOTATED\cat\
+REMOVE from the staging folder any image you did NOT draw a polygon on
+```
+
+> Skip `data\ANNOTATED\cat\` for images that contain only a `hand`, and vice
+> versa. An image with no polygons is skipped by the pipeline — but an image
+> filed under the wrong class teaches the model the wrong thing.
 
   </div>
 </details>
@@ -190,6 +204,15 @@ data/
 and their contents with the class prefix (<code>cat_001.jpg</code>). It makes
 the next stage's naming self-explanatory.</div>
 
+Check these before moving on — each one silently breaks the pipeline downstream:
+
+- [ ] Every image has a **sibling `.json`** named identically (`cat_001.jpg` ↔ `cat_001.json`)
+- [ ] **No `.jpg.json`** files — that is the single most common mistake, and stage 04 skips every such image while the status tables still look healthy
+- [ ] An image containing only a `hand` is filed under `hand/`, not `cat/`
+- [ ] Both files live in the **same** folder (the `.json` sits next to its photo)
+- [ ] Each photo appears in **exactly one** class folder — not copied into both
+- [ ] A stray wrapper folder (`ANNOTATED/cat/images/...`) is not hiding your files
+
 ## Step 7 (optional) — Pre-crop locally
 
 This runs the same "one crop per object" split that Colab will run later, so
@@ -210,9 +233,11 @@ first, or skip this optional step and let Colab crop in stage 04.
   <summary><span class="chev">▾</span>What the script needs, and what it won't do</summary>
   <div class="details-body">
 
-- Requires `pip install opencv-python rich pillow`.
-- Only reads `<image>.jpg` + `<image>.json` pairs, so a missing JSON
-  means that image is skipped (it shows up as "un-annotated" in the report).
+- Needs `rich` and `Pillow` — the script installs both itself on first run.
+  No OpenCV.
+- Only reads `<image>.png` / `.jpg` / `.jpeg` / `.webp` pairs with a matching
+  `<image>.json`, so a missing JSON means that image is skipped (it shows up
+  as "un-annotated" in the report).
 - It never touches images without polygons, even with `--delete-originals`.
 
   </div>

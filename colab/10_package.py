@@ -3,7 +3,7 @@ Stage 10 — Zip & download.
 
 Compresses `organized_dataset/` (images + JSON + visual map) into a single
 zip and triggers the browser download, so the refined dataset can be fed
-into training (see docs/05-train-and-export.md).
+into training (see docs/06-train-and-export.md).
 """
 
 import os
@@ -77,6 +77,6 @@ console.print(Panel(
     "Your organized dataset is zipped and downloading.\n"
     "Open [cyan]Visual_Map.html[/cyan] (inside the zip) in any browser for "
     "the interactive map.\n\n"
-    "[dim]Next: convert to YOLO format and train — see docs/04 and docs/05.[/dim]",
+    "[dim]Next: convert to YOLO format and train — see docs/05 and docs/06.[/dim]",
     border_style="green", expand=False,
 ))

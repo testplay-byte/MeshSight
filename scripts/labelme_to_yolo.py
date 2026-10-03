@@ -14,7 +14,7 @@ Usage:
 
     Options: --val-split 0.1   --min-val 1   --no-zip
 
-This is step 4 of the pipeline — see docs/04-convert-dataset.md.
+This is step 4 of the pipeline — see docs/05-convert-dataset.md.
 """
 
 import argparse

@@ -69,6 +69,16 @@ tools (YOLO conversion) simply see more, cleaner classes.
 dot is an image, position = 2D similarity, color = cluster, red pulse =
 outlier. Click any dot for its details.
 
+Open the map before training and confirm the clustering actually did something
+sensible. This is the one place you can cheaply catch a broken run:
+
+- [ ] `Visual_Map.html` opens in a browser and the dots are **not** all one colour
+- [ ] Each class folder holds a **usable** number of crops — not 1–2, not hundreds of near-duplicates
+- [ ] You opened `cat_Outlier` (or the equivalent) and the contents look like **bad annotations, not real variants**
+- [ ] A class you expected to split (e.g. several cat colours) **did** split; one you expected to stay whole **did not** shatter
+- [ ] The names read as classes a person would use (`cat_C1`) — not leftovers like `cat_Outlier` sitting half the dataset
+- [ ] Nothing is obviously mislabelled: no cat crops sitting in the `hand` folder
+
 ## Why this combination wins
 
 | Naive dataset | MeshSight dataset |
@@ -88,6 +98,13 @@ faster and recognizes your objects, not your average stock photo.
 | `UMAP_N_NEIGHBORS` | 15 | variants merge into one blob | your variants are subtle |
 | `HDBSCAN_MIN_CLUSTER_SIZE` | 15 | tiny groups shouldn't exist | you *want* many small variants |
 | `MIN_GROUP_SIZE_FOR_CLUSTER` | 5 | small classes split wrongly | (rare — keep ≥ 5) |
+
+<div class="do-this"><strong>The clustering threshold is capped, silently.</strong>
+Stage 07 uses <code>min(HDBSCAN_MIN_CLUSTER_SIZE, group_size // 3)</code>, never
+your raw number. So the value you set only has any effect on a group of
+<strong>45+ images</strong> — below that the cap binds first. If a class of
+30 images keeps splitting into fragments no matter what you set, that isn't a
+knob problem: there isn't enough data to cluster.</div>
 
 **Re-run ranges:** `PADDING_FACTOR` → stages **04 → 05 → 06 → 07 → 08 → 09**.
 `UMAP_*` / `HDBSCAN_*` / `MIN_GROUP_SIZE_FOR_CLUSTER` → stages **06 → 07 → 08 → 09**

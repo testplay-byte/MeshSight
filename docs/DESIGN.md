@@ -21,12 +21,20 @@
 
 ### Surfaces
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `bg-base` | `#1E1E24` | Page background |
-| `bg-surface` | `#28282F` | Cards, panels, content blocks |
-| `bg-sidebar` | `#242430` | Navigation, overlays |
-| `bg-elevated` | `#333340` | Hover states, active items |
+The base is a deep emerald-tinted dark. Everything above it is **translucent
+green-white**, never an opaque grey — that is what lets the ambient background
+show through the glass.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `bg-base` | `#0d1512` | Page background (the only opaque surface) |
+| `bg-surface` | `rgba(232,245,236,0.07)` | Cards, panels, content blocks |
+| `bg-sidebar` | `rgba(232,245,236,0.05)` | Navigation, overlays |
+| `bg-elevated` | `rgba(232,245,236,0.11)` | Hover states, active items |
+
+The finer **surface ladder** (`surface-1` → `surface-5`, `0.06` → `0.24`) exists
+for stacked elevation inside glass panels; `surface-solid` (`#16211c`) is the
+opaque fallback for anything that must *not* show the background through.
 
 ### Accents
 
@@ -36,7 +44,7 @@ Exactly three, per the Dark Neon system — never a fourth:
 |-------|-----|------|
 | `accent-lime` | `#BCFF5F` | Primary — actions, success, brand, links, focus |
 | `accent-sky` | `#5FC9FF` | Secondary — information, step badges, live states |
-| `accent-coral` | `#FF5F7E` | Danger — errors, destructive actions only |
+| `accent-coral` | `#FF8296` | Danger — errors, destructive actions only |
 
 Hover on lime buttons goes brighter (`#D4FF99`), never a new hue. The logo
 tile keeps its own emerald gradient (`#34C781 → #109669`) — that is brand
@@ -45,17 +53,20 @@ identity, not a UI accent, and stays fixed.
 ### Text
 
 | Token | Hex | Usage |
-|-------|-----|-------|
-| `white` | `#FFFFFF` | Headlines, primary values |
-| `text-secondary` | `#C8C8D4` | Body text |
-| `text-muted` | `#8888A0` | Labels, captions |
-| `text-dim` | `#55556A` | Decorative only — never required reading |
+|-------|-------|-------|
+| `text` | `#F2F7F3` | Headlines, primary values |
+| `text-secondary` | `#C2CEC6` | Body text |
+| `text-muted` | `#93A199` | Labels, captions |
+| `text-dim` | `#64716A` | Decorative only — never required reading |
 
 ### Borders & shadows
 
-- Default border: `rgba(255,255,255,0.08)` · subtle: `0.04` · strong (overlays): `0.12`
-- Glow shadows: `0 0 20px` at 20% opacity of the relevant accent
+- Subtle border: `rgba(255,255,255,0.05)` · default: `0.1` · glass: `0.12` ·
+  strong (overlays): `0.18`
+- Glow shadows: `0 0 20px` at **25%** opacity of the relevant accent
   (`shadow-glow-lime`, `shadow-glow-sky`, `shadow-glow-coral`)
+- Depth: `shadow-1` (`0 8px 24px`) for panels, `shadow-2` (`0 16px 48px`) for
+  overlays, plus `shadow-inset` for the glass edge stack.
 
 ## 3. Typography
 
@@ -69,19 +80,26 @@ identity, not a UI accent, and stays fixed.
 
 | Element | Radius |
 |---------|--------|
-| Cards, panels | 16px (`rounded-2xl`) |
-| Buttons, inputs | 12px (`rounded-xl`) |
-| Badges, chips | 8px (`rounded-lg`) |
+| Hero panel, large cards | 28px (`r-xl`) |
+| Cards, panels | 16–20px (`r-md` / `r-lg`) |
+| Buttons, inputs | 12px (`r-sm`) |
+| Badges, chips | 8px (`r-xs`) |
 | Logo tile, status dots | full / 50% |
 
-Glass recipe for overlays: `bg-sidebar/90 + backdrop-blur-2xl + border-white/[0.12] + shadow-2xl`.
+Glass recipe for overlays: a translucent surface tier +
+`backdrop-filter: blur(20px) saturate(1.5)` + `border-white/[0.12]` +
+`shadow-inset` + `shadow-2`.
+
+**Never stack translucent glass on translucent glass.** The nav layer carries
+the strongest glass; content panels below it use the weaker surface tiers so
+they read as *behind* the nav, not as a second frosted sheet competing with it.
 
 ## 5. Background texture
 
 Three layers, all `pointer-events-none`, behind content:
 1. **Noise** — 3% opacity fractal-noise SVG tile
 2. **Grid dots** — `radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)`, 24px cells
-3. **Orbs** — two blurred floating circles (lime 5%, sky 5%), slow `ease-in-out` drift
+3. **Orbs** — three blurred drifting circles (lime, sky, coral), slow `ease-in-out` drift
 
 ## 6. The logo
 

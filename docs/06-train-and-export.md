@@ -117,6 +117,15 @@ Skip to [Guide 07](07-android-app.md): build the APK once via GitHub Actions
 data → pipeline → YOLO dataset → trained .tflite → phone 🎉
 ```
 
+Before you leave this guide, confirm the whole loop actually closes:
+
+- [ ] `model.export(...)` printed a real path — you used **that** filename, not one guessed from the docs
+- [ ] `nms=False` was set (the app runs its own NMS; bundled NMS ops break the GPU delegate)
+- [ ] `best_float32.tflite` is downloaded **and opens as a file** — not a 0-byte HTML error page from Drive
+- [ ] `classes.txt` came from **this** run's dataset folder, with the same class order as the trained model
+- [ ] Your class count in `classes.txt` matches the model's `C` in the boxes tensor `[1, 4+C+32, N]`
+- [ ] `mAP50` printed above ~0.8 — if it's much lower, fix the data before touching the export again
+
 ## Common export problems
 
 | Error | Cause / fix |

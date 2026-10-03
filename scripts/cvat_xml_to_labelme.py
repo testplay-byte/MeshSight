@@ -9,7 +9,7 @@ images that contain at least one valid polygon get a JSON file.
 Usage:
     python cvat_xml_to_labelme.py <cvat.xml> <output_dir>
 
-This is step 1 of the local data pipeline — see docs/01-collect-and-annotate.md.
+This is step 1 of the local data pipeline — see docs/01-collect-and-organize.md.
 """
 
 import argparse

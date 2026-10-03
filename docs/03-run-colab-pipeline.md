@@ -50,10 +50,10 @@ Stage 01 prints the path it will use — check that table before stage 03.
 
 ## Step 2 — Open Colab and create the cells
 
-1. Go to [colab.research.google.com](https://colab.research.google.com) →
-   **New notebook**.
 - [ ] Runtime is set to a **T4 GPU** (CPU works but is slow)
 
+1. Go to [colab.research.google.com](https://colab.research.google.com) →
+   **New notebook**.
 2. **Runtime → Change runtime type → T4 GPU** (recommended; CPU works but
    is slow).
 3. In the Colab toolbar click the **code** icon `+` to add a code cell.
@@ -94,17 +94,25 @@ version):
 
 Repeat with `02_helpers.py` … `10_package.py`, running them in order.
 
-**Option 2 — upload the folder once:**
+**Option 2 — upload the folder as a zip:**
 
-Open the **Files** panel (folder icon 📁 in Colab) → **Upload** → select
-your local `colab/` folder. Colab puts it at `/content/colab`. Then add a
-first cell:
+Colab's Files panel uploads **files, not folders** — selecting a folder does
+nothing useful. Zip it first, then upload the single `.zip`:
 
-```python
-import sys; sys.path.append("/content/colab")
+```bash
+# in PowerShell, from the folder that CONTAINS colab/
+Compress-Archive -Path colab -DestinationPath colab.zip
 ```
 
-and run the stages normally — stage 01 finds `config.py` automatically.
+Open the **Files** panel (folder icon in Colab) → **Upload** → pick
+`colab.zip` → then run this cell:
+
+```python
+!unzip -q /content/colab.zip -d /content
+```
+
+The stages land in `/content/colab/`. Run them normally — stage 01 adds that
+path to `sys.path` itself, so no extra `sys.path` line is needed.
 
   </div>
 </details>
@@ -154,9 +162,16 @@ Stage 03 will prompt you to **grant Drive access** — click *Connect* /
 |---|---|
 | `ModuleNotFoundError: No module named 'config'` | Run the config cell (step 3) **above** stage 01, then re-run stage 01 |
 | `FileNotFoundError` at stage 03 | The archive path is wrong — check the config table stage 01 printed |
-| Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, step 6 |
+| Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, step 8 |
 | Colab disconnected | Runtime → Run all from stage 01 again; RAM resets between runs |
-| OOM during stage 05 | Free Colab offers T4 (sometimes L4). Interrupt the runtime, re-run stage 05. If it still OOMs, split your photos into 2–3 smaller zips and run stages 03–09 once per zip, or upgrade to a paid GPU. |
+| OOM during stage 05 | Free Colab offers T4 (sometimes L4). Interrupt the runtime, re-run stage 05. If it still OOMs, cut the photo count and re-upload, or upgrade to a paid GPU. |
+
+> **Do not split the work across several zips and run stages 03–09 once per
+> zip.** Stage 03 wipes `WORKING_DIR/` and stage 08 wipes `organized_dataset/`
+> at the start of every run, so the second zip erases the first zip's crops and
+> clusters. You would train on whichever zip ran last. The pipeline is built to
+> handle a large dataset in one pass — reduce the photo count or upgrade the GPU
+> instead.
 
   </div>
 </details>

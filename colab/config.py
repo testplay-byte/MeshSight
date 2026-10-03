@@ -3,7 +3,7 @@ MeshSight Colab pipeline — central configuration.
 
 Every stage script (01–10) imports this module, so you only ever edit values
 in ONE place. Upload this file and the numbered scripts to a Google Colab
-notebook cell-by-cell (see docs/02-run-colab-pipeline.md), or use the
+notebook cell-by-cell (see docs/03-run-colab-pipeline.md), or use the
 provided one-click notebook instructions in the docs.
 
 Quick-start checklist:

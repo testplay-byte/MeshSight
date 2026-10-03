@@ -35,7 +35,7 @@ under **Actions → Artifacts → `meshsight-debug-apk`**, valid for 90 days.
 
 ### Installing on the phone
 
-Requires **Android 12 or newer** (the app targets API 31+).
+Requires **Android 12 or newer** (`minSdk 31`; built against and targeting API 36).
 
 1. Copy `MeshSight-debug.apk` to the phone (Drive, cable, anything). Also
    download `best_float32.tflite` and `classes.txt` to the phone's **Downloads**
@@ -52,8 +52,6 @@ Requires **Android 12 or newer** (the app targets API 31+).
 `KEY_PASSWORD` — to repo Settings → Secrets, and wire signing into
 `android/app/build.gradle.kts`. Until then, debug builds are the install path.)*
 
-## Step 3 — Use the app
-
 ## Step 2 — Load your model
 
 - **Settings (⚙ bottom-right) → Swap Active Model** → pick your
@@ -66,6 +64,8 @@ Requires **Android 12 or newer** (the app targets API 31+).
   known-good model shows **LOAD FAILED**, flip this off and re-pick the model —
   some Adreno/Mali drivers reject the delegate at load time. Compare the
   **LATENCY** stat (bottom card) to see which is faster on your phone.
+
+## Step 3 — Use the app
 
 ### Live camera mode
 
