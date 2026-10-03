@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Frame from "@/components/Frame";
+import SiteNav from "@/components/SiteNav";
+import { IconGithub } from "@/components/Icons";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -15,11 +16,38 @@ export const metadata: Metadata = {
     "A complete, self-hosted pipeline for custom object detectors: annotate photos, split and cluster datasets in Colab, train YOLO, run it on your phone.",
 };
 
+const GITHUB = "https://github.com/testplay-byte/MeshSight";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="h-dvh overflow-hidden antialiased">
-        <Frame>{children}</Frame>
+      <body className="antialiased">
+        <div className="orb orb-lime" />
+        <div className="orb orb-sky" />
+        <div className="orb orb-coral" />
+
+        <SiteNav />
+
+        {/* content */}
+        <div className="page-wrap fade-in">{children}</div>
+
+        {/* footer */}
+        <footer className="app-footer">
+          <span className="l">MESHSIGHT — SELF-HOSTED OBJECT RECOGNITION</span>
+          <div className="r">
+            <a
+              href={GITHUB}
+              target="_blank"
+              rel="noreferrer"
+              className="mono"
+              style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
+            >
+              github.com/testplay-byte/MeshSight
+            </a>
+            <span className="live-dot sky" />
+            <span className="live-lbl sky">Live</span>
+          </div>
+        </footer>
       </body>
     </html>
   );

@@ -4,10 +4,10 @@
  */
 export default function PipelineDiagram() {
   const stages = [
-    { x: 60, label: "Photos", sub: "collect" },
+    { x: 60, label: "Collect", sub: "photos" },
     { x: 200, label: "Annotate", sub: "polygons" },
     { x: 340, label: "Colab", sub: "split + cluster" },
-    { x: 480, label: "YOLO", sub: "dataset" },
+    { x: 480, label: "Dataset", sub: "YOLO format" },
   ];
   const bottom = [
     { x: 130, label: "Train", sub: "YOLOv8-se" },

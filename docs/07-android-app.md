@@ -10,6 +10,8 @@ parent: Guides
 your objects. Includes how APKs are built (GitHub Actions — nothing heavy on
 your machine).
 
+[[illustration:app]]
+
 ## Getting the APK — GitHub Releases
 
 The app is never compiled locally in this project; CI does it:

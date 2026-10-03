@@ -10,6 +10,8 @@ parent: Guides
 what you started with. Read this once; you'll never have to read the code
 to know *why* the output looks the way it does.
 
+[[illustration:split-cluster]]
+
 ## Idea 1 — Split every object into its own image
 
 A photo containing a cat and two dogs is **one** image but **three** objects.

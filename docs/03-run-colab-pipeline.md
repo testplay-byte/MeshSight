@@ -14,6 +14,8 @@ pipeline takes a zip of per-class image+annotation folders and returns those
 images sorted into **visually tight sub-classes** (see
 [Guide 04](04-split-and-cluster.md) for *why* that matters).
 
+[[illustration:colab]]
+
 ## Step 1 — Upload to Google Drive
 
 1. In Google Drive, create: `MyDrive/MeshSight/DATA/`
@@ -80,6 +82,8 @@ bottom. They share one memory space on purpose — stage 04's results feed
 | Stage 4: "Found 0 images" | images and JSONs must be inside the archive with matching stems |
 | Stage 7: everything is one cluster | increase `UMAP_N_NEIGHBORS`, or you genuinely have homogeneous data (good!) |
 | Stage 10: no download prompt | browser blocked it; grab `/content/organized_dataset.zip` from the file panel |
+
+[[illustration:map]]
 
 ## Step 6 — Review the Visual Map
 

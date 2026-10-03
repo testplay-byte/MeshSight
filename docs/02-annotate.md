@@ -13,6 +13,8 @@ in every photo. The whole pipeline runs on these outlines: the split stage
 crops along them, the trainer learns from them, and loose or wrong polygons
 are the #1 cause of bad models.
 
+[[illustration:annotate]]
+
 ## Step 1 — Pick your tool
 
 | Tool | Cost | Best for |

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import PipelineDiagram from "@/components/PipelineDiagram";
 import { IconArrowRight, IconDownload } from "@/components/Icons";
 import { getGuides } from "@/lib/guides";
 
@@ -52,6 +53,17 @@ export default function Home() {
             <IconDownload className="ic s" />
             Get the APK
           </a>
+        </div>
+      </section>
+
+
+      {/* How it flows */}
+      <section style={{ marginTop: 72 }}>
+        <p className="label-micro-bold" style={{ marginBottom: 16 }}>
+          How it flows
+        </p>
+        <div className="card">
+          <PipelineDiagram />
         </div>
       </section>
 

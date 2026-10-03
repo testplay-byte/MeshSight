@@ -11,6 +11,8 @@ training-ready YOLO-segmentation dataset with `dataset.yaml` and `classes.txt`.
 
 This runs **on your machine** — no Colab needed.
 
+[[illustration:convert]]
+
 ## Prerequisites
 
 - Python 3.9+ with Pillow (`pip install Pillow`) — the script installs it

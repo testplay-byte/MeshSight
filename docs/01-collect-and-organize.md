@@ -11,6 +11,8 @@ Guide 02.
 This is the cheapest step to get right and the most expensive to get wrong:
 every quality problem here multiplies later.
 
+[[illustration:collect]]
+
 ## Step 1 — Decide your classes
 
 Write down what you want the model to recognize, as simple nouns:

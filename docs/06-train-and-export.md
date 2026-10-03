@@ -14,6 +14,8 @@ This is the one guide without a script file — it's a handful of cells you
 paste into a fresh Colab notebook. (Adding a saved notebook template here is
 a known TODO, see CONTRIBUTING.md.)
 
+[[illustration:train]]
+
 ## Step 1 — New Colab notebook, GPU runtime
 
 **Runtime → Change runtime type → T4 GPU.** Upload `data.zip` to your Drive
