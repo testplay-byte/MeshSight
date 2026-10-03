@@ -22,32 +22,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
-        <div className="orb orb-lime" />
-        <div className="orb orb-sky" />
-        <div className="orb orb-coral" />
+        <div className="stage">
+          <SiteNav />
+          <div className="page-wrap fade-in">{children}</div>
 
-        <SiteNav />
-
-        {/* content */}
-        <div className="page-wrap fade-in">{children}</div>
-
-        {/* footer */}
-        <footer className="app-footer">
-          <span className="l">MESHSIGHT — SELF-HOSTED OBJECT RECOGNITION</span>
-          <div className="r">
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noreferrer"
-              className="mono"
-              style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
-            >
-              github.com/testplay-byte/MeshSight
-            </a>
-            <span className="live-dot sky" />
-            <span className="live-lbl sky">Live</span>
-          </div>
-        </footer>
+          {/* footer */}
+          <footer className="app-footer">
+            <span className="l">MESHSIGHT — SELF-HOSTED OBJECT RECOGNITION</span>
+            <div className="r">
+              <a
+                href={GITHUB}
+                target="_blank"
+                rel="noreferrer"
+                className="mono"
+                style={{ color: "var(--color-text-muted)", textDecoration: "none" }}
+              >
+                github.com/testplay-byte/MeshSight
+              </a>
+              <span className="live-dot sky" />
+              <span className="live-lbl sky">Live</span>
+            </div>
+          </footer>
+        </div>
       </body>
     </html>
   );
