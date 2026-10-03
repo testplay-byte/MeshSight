@@ -2,15 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  IconArrowRight,
-  IconSearch,
-} from "@/components/Icons";
+import { IconArrowRight, IconSearch } from "@/components/Icons";
 import type { Guide } from "@/lib/guides";
 
-/**
- * Guides index: one bold row per step. Search filters by name or artifacts.
- */
+/** Guides index — same rail language as the homepage flow. */
 export default function GuideBrowser({ guides }: { guides: Guide[] }) {
   const [query, setQuery] = useState("");
 
@@ -26,18 +21,15 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
   }, [query, guides]);
 
   return (
-    <div className="flex flex-col" style={{ maxWidth: 980 }}>
-      <div
-        className="page-title"
-        style={{ flexDirection: "column", alignItems: "flex-start", gap: 20 }}
-      >
+    <div className="flex flex-col">
+      <div className="page-title">
         <div>
           <h1 className="display-h2">Guides</h1>
           <div className="sub" style={{ fontSize: 14, marginTop: 6 }}>
-            Seven steps, one flow — in order.
+            Seven steps, one flow — each guide hands you the input the next one needs.
           </div>
         </div>
-        <div className="kp-field" style={{ width: 300, maxWidth: "100%" }}>
+        <div className="kp-field" style={{ width: 280, maxWidth: "100%" }}>
           <span className="lead">
             <IconSearch className="ic s" />
           </span>
@@ -52,42 +44,35 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state" style={{ padding: "80px 0" }}>
+        <div className="empty-state" style={{ padding: "70px 0" }}>
           <div className="eb">
             <IconSearch className="ic l" />
           </div>
           <h3>No steps match</h3>
           <p style={{ fontSize: 13 }}>
-            Try a different word — or clear the search to see all seven steps.
+            Try a different word — or clear the search to see all seven.
           </p>
-          <button
-            className="btn-secondary"
-            style={{ height: 40, fontSize: 13 }}
-            onClick={() => setQuery("")}
-          >
+          <button className="btn-secondary" style={{ height: 40, fontSize: 13 }} onClick={() => setQuery("")}>
             Clear search
           </button>
         </div>
       ) : (
-        <div>
+        <div className="rail-flow" style={{ marginTop: 8 }}>
           {filtered.map((g) => (
-            <Link key={g.slug} href={`/guides/${g.slug}`} className="step-row">
-              <span className="num">{String(g.step).padStart(2, "0")}</span>
-              <span>
-                <span className="t" style={{ display: "block" }}>{g.short}</span>
-                <span
-                  className="mono"
-                  style={{ fontSize: 11, color: "var(--color-text-dim)", display: "block", marginTop: 4 }}
-                >
-                  {g.outputs.join(" · ")}
-                </span>
+            <Link key={g.slug} href={`/guides/${g.slug}`} className="rail-row">
+              <span className="rail-node">
+                {String(g.step).padStart(2, "0")}
               </span>
-              <span className="meta">
-                <span className="badge sky">{g.time}</span>
-                <span className="go">
-                  Open
-                  <IconArrowRight className="ic s" />
-                </span>
+              <span className="rail-title">{g.short}</span>
+              <span className="rail-blurb">{g.description}</span>
+              <span className="rail-meta">
+                <span className="rail-time">{g.time}</span>
+                {g.outputs.slice(0, 2).map((o) => (
+                  <span key={o} className="rail-chip">{o}</span>
+                ))}
+              </span>
+              <span className="rail-arrow">
+                <IconArrowRight className="ic" />
               </span>
             </Link>
           ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,9 +18,10 @@ import type { Guide, Step } from "@/lib/guides";
 import { githubUrl, headingId } from "@/lib/md-utils";
 
 /**
- * Full-screen setup wizard: one step per screen, everything else hidden
- * (site nav, rail, footer). Next advances *within* the guide; the guide
- * only ends when you finish its last step.
+ * Full-screen setup wizard: one step per screen, all site chrome hidden.
+ * Navigation is inline at the end of the content — no fixed bottom bar.
+ * Next advances within the guide; the last step hands off directly to the
+ * next guide (no intermediate "done" screen).
  */
 export default function GuideWizard({
   guide,
@@ -30,9 +32,9 @@ export default function GuideWizard({
   nextGuide?: Guide;
   totalGuides: number;
 }) {
+  const router = useRouter();
   const [i, setI] = useState(0);
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const [finished, setFinished] = useState(false);
 
   // keep check-offs across refreshes
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function GuideWizard({
       if (raw) setDone(JSON.parse(raw));
     } catch {}
   }, [guide.slug]);
+
   useEffect(() => {
     try {
       window.localStorage.setItem(`ms-check:${guide.slug}`, JSON.stringify(done));
@@ -49,24 +52,38 @@ export default function GuideWizard({
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [i, finished]);
+  }, [i]);
 
   const step: Step | undefined = guide.steps[i];
   const isLast = i === guide.steps.length - 1;
-  const stepDone = step ? step.checklist.filter((c) => done[c.id]).length : 0;
 
   const mdComponents = useMemo(
     () => ({
-      a: ({ href, children, ...rest }: { href?: string; children?: React.ReactNode }) => (
-        <a
-          href={href ? (href.match(/^\d{2}-/) ? `/guides/${href.replace(/\.md.*$/, "")}` : githubUrl(href.replace(/^\.\.?\//, "").replace(/^docs\//, ""))) : href}
-          target={href && /^(https?:|mailto:)/.test(href) ? "_blank" : undefined}
-          rel={href && /^(https?:|mailto:)/.test(href) ? "noreferrer" : undefined}
-          {...rest}
-        >
-          {children}
-        </a>
-      ),
+      a: ({
+        href,
+        children,
+        ...rest
+      }: {
+        href?: string;
+        children?: React.ReactNode;
+      }) => {
+        const target = href
+          ? href.match(/^\d{2}-/)
+            ? `/guides/${href.replace(/\.md.*$/, "")}`
+            : githubUrl(href.replace(/^\.\.?\//, "").replace(/^docs\//, ""))
+          : href;
+        const external = Boolean(href && /^(https?:|mailto:)/.test(href));
+        return (
+          <a
+            href={target}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noreferrer" : undefined}
+            {...rest}
+          >
+            {children}
+          </a>
+        );
+      },
       pre: ({ children }: { children?: React.ReactNode }) => (
         <CodeBlock>{children}</CodeBlock>
       ),
@@ -77,47 +94,11 @@ export default function GuideWizard({
     []
   );
 
-  // ── Completion screen ──────────────────────────────────────────
-  if (finished) {
-    return (
-      <div className="wizard">
-        <div className="wiz-done">
-          <span className="wiz-done-badge">
-            <IconCheck className="ic l" />
-          </span>
-          <h1 className="display-h2">{guide.short} — done</h1>
-          <p style={{ color: "var(--color-text-muted)", maxWidth: 420, textAlign: "center", lineHeight: 1.7 }}>
-            That completes guide {guide.step} of {totalGuides}. {nextGuide ? `Next up: ${nextGuide.short}.` : "You have everything — now run it."}
-          </p>
-          <div className="wiz-done-actions">
-            {nextGuide ? (
-              <Link href={`/guides/${nextGuide.slug}`} className="btn-primary">
-                Start {nextGuide.short}
-                <IconArrowRight className="ic" />
-              </Link>
-            ) : (
-              <Link
-                href="https://github.com/testplay-byte/MeshSight/releases"
-                className="btn-primary"
-              >
-                <IconArrowRight className="ic" />
-                Download the APK
-              </Link>
-            )}
-            <Link href="/guides" className="btn-ghost" style={{ height: 44, fontSize: 13 }}>
-              All guides
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (!step) return null;
 
   return (
     <div className="wizard">
-      {/* ── Wizard header ─────────────────────────────────────────── */}
+      {/* header */}
       <header className="wiz-head">
         <div className="wiz-head-left">
           <Link href="/guides" className="wiz-exit" aria-label="Back to guides">
@@ -140,11 +121,11 @@ export default function GuideWizard({
         </div>
       </header>
 
-      {/* ── Step body ─────────────────────────────────────────────── */}
+      {/* step body */}
       <main className="wiz-body">
         <div className="wiz-step">
           <p className="label-micro-bold" style={{ marginBottom: 10 }}>
-            Step {step.n}
+            Step {step.n} of {guide.steps.length}
           </p>
           <h1 className="display-h2">{step.title}</h1>
 
@@ -165,7 +146,9 @@ export default function GuideWizard({
                       onClick={() => setDone((d) => ({ ...d, [c.id]: !d[c.id] }))}
                       aria-pressed={on}
                     >
-                      <span className="wiz-box">{on && <IconCheck className="ic xs" />}</span>
+                      <span className="wiz-box">
+                        {on && <IconCheck className="ic xs" />}
+                      </span>
                       <span>{c.text}</span>
                     </button>
                   </li>
@@ -183,41 +166,45 @@ export default function GuideWizard({
               {step.body}
             </ReactMarkdown>
           </div>
+
+          {/* inline navigation — scrolls with the content, no bottom bar */}
+          <nav className="wiz-nav">
+            {i > 0 ? (
+              <button className="btn-ghost" onClick={() => setI(i - 1)}>
+                <IconArrowLeft className="ic s" />
+                Back
+              </button>
+            ) : (
+              <span />
+            )}
+
+            {isLast ? (
+              nextGuide ? (
+                <button
+                  className="btn-primary"
+                  onClick={() => router.push(`/guides/${nextGuide.slug}`)}
+                >
+                  Start {nextGuide.short}
+                  <IconArrowRight className="ic s" />
+                </button>
+              ) : (
+                <a
+                  className="btn-primary"
+                  href="https://github.com/testplay-byte/MeshSight/releases"
+                >
+                  Download the APK
+                  <IconArrowRight className="ic s" />
+                </a>
+              )
+            ) : (
+              <button className="btn-primary" onClick={() => setI(i + 1)}>
+                Next step
+                <IconArrowRight className="ic s" />
+              </button>
+            )}
+          </nav>
         </div>
       </main>
-
-      {/* ── Wizard footer ─────────────────────────────────────────── */}
-      <footer className="wiz-foot">
-        <button
-          className="btn-ghost"
-          style={{ height: 44, fontSize: 13 }}
-          onClick={() => setI(Math.max(0, i - 1))}
-          disabled={i === 0}
-        >
-          <IconArrowLeft className="ic s" />
-          Back
-        </button>
-
-        <span className="mono wiz-foot-hint">
-          {step.checklist.length > 0
-            ? `${stepDone} / ${step.checklist.length} done`
-            : step.n === 1
-              ? guide.goal
-              : ""}
-        </span>
-
-        {isLast ? (
-          <button className="btn-primary" style={{ height: 44, fontSize: 14 }} onClick={() => setFinished(true)}>
-            Finish guide
-            <IconCheck className="ic s" />
-          </button>
-        ) : (
-          <button className="btn-primary" style={{ height: 44, fontSize: 14 }} onClick={() => setI(i + 1)}>
-            Next step
-            <IconArrowRight className="ic s" />
-          </button>
-        )}
-      </footer>
     </div>
   );
 }

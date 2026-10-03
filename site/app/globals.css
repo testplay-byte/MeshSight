@@ -1423,3 +1423,168 @@ body:has(.wizard) .site-nav,
 body:has(.wizard) .app-footer { display: none; }
 body:has(.wizard) .page-wrap { padding-top: 0; padding-bottom: 0; max-width: none; }
 body:has(.wizard) .orb { display: none; }
+
+/* ════════════════════════════════════════════════════════════════════
+   FLOW RAIL — the shared visual language for the pipeline.
+   A glowing node per stage, an animated connector between them, and
+   typography doing the work. No card walls.
+   ════════════════════════════════════════════════════════════════════ */
+.rail-flow {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-left: 46px;
+}
+.rail-flow::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 22px;
+  bottom: 22px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(188, 255, 95, 0.55),
+    rgba(95, 201, 255, 0.45) 60%,
+    rgba(255, 255, 255, 0.06)
+  );
+}
+.rail-node {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--color-bg-base);
+  background: var(--color-accent-lime);
+  box-shadow: 0 0 0 4px rgba(188, 255, 95, 0.12), 0 0 18px rgba(188, 255, 95, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.rail-node.sky {
+  background: var(--color-accent-sky);
+  box-shadow: 0 0 0 4px rgba(95, 201, 255, 0.12), 0 0 18px rgba(95, 201, 255, 0.35);
+}
+.rail-row {
+  position: relative;
+  display: block;
+  padding: 14px 18px 18px 0;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.rail-row:hover { background: rgba(255, 255, 255, 0.035); }
+.rail-row:hover .rail-node {
+  transform: scale(1.14);
+  box-shadow: 0 0 0 5px rgba(188, 255, 95, 0.16), 0 0 26px rgba(188, 255, 95, 0.55);
+}
+.rail-row:hover .rail-node.sky {
+  box-shadow: 0 0 0 5px rgba(95, 201, 255, 0.16), 0 0 26px rgba(95, 201, 255, 0.5);
+}
+.rail-title {
+  display: block;
+  font-size: clamp(19px, 2.4vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.2;
+}
+.rail-row:hover .rail-title { color: var(--color-accent-lime); }
+.rail-blurb {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+.rail-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 9px;
+}
+.rail-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.rail-chip {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-accent-sky);
+  border: 1px solid rgba(95, 201, 255, 0.18);
+  background: rgba(95, 201, 255, 0.06);
+  border-radius: 9999px;
+  padding: 2px 9px;
+}
+.rail-arrow {
+  position: absolute;
+  right: 14px;
+  top: 20px;
+  color: var(--color-text-dim);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all 0.2s ease;
+  display: flex;
+}
+.rail-row:hover .rail-arrow { opacity: 1; transform: translateX(0); color: var(--color-accent-lime); }
+@media (max-width: 560px) {
+  .rail-flow { padding-left: 38px; }
+  .rail-flow::before { left: 10px; }
+  .rail-node { width: 22px; height: 22px; font-size: 9px; top: 14px; }
+  .rail-title { font-size: 19px; }
+}
+
+/* ── Home hero ─────────────────────────────────────────────────── */
+.hero-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 24px 0 8px;
+}
+.hero-mark {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  box-shadow: 0 0 44px rgba(52, 199, 129, 0.28);
+}
+.hero-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent-lime);
+}
+.hero-title { font-size: clamp(40px, 5.4vw, 72px); max-width: 15ch; }
+.hero-sub {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  max-width: 480px;
+  line-height: 1.65;
+}
+.hero-block .btn-primary { margin-top: 8px; }
+.flow-section { margin-top: 88px; padding-bottom: 40px; }
+
+/* ── Wizard: inline navigation (no fixed bottom bar) ──────────────── */
+.wiz-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 44px;
+  padding-top: 26px;
+  border-top: 1px solid var(--color-line);
+}
+.wiz-nav .btn-ghost { height: 44px; font-size: 13px; }
+.wiz-nav .btn-primary { height: 46px; font-size: 14px; padding: 0 22px; }
+/* body no longer needs to reserve space for a footer */
+.wiz-body { padding-bottom: 64px; }
