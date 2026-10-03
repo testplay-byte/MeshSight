@@ -51,8 +51,9 @@ const META: Record<string, { short: string; description: string }> = {
 };
 
 function extractGoal(content: string): string {
-  const m = content.match(/\*\*Goal:\*\*\s*([^\n]+)/);
-  return m ? m[1].trim() : "";
+  // Goal paragraphs wrap across lines; capture until the next blank line.
+  const m = content.match(/\*\*Goal:\*\*\s*((?:[^\n]+\n?)+?)(?=\n\s*\n|$)/);
+  return m ? m[1].replace(/\n/g, " ").replace(/\s+/g, " ").trim() : "";
 }
 
 export function getGuides(): Guide[] {
