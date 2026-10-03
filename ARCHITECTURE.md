@@ -1,3 +1,8 @@
+---
+title: "Architecture"
+nav_order: 3
+---
+
 # 🏗️ Architecture
 
 How MeshSight's three subsystems connect, and where to look when you want to

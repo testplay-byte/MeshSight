@@ -1,3 +1,9 @@
+---
+title: "Train & Export TFLite"
+nav_order: 6
+parent: Guides
+---
+
 # 🧠 Guide 05 — Train in Colab & Export to TFLite
 
 **Goal:** take `data.zip` from Guide 04, train a YOLOv8-se segmentation

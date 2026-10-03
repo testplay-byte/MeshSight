@@ -1,3 +1,9 @@
+---
+title: "Run the Colab Pipeline"
+nav_order: 3
+parent: Guides
+---
+
 # ▶️ Guide 02 — Run the Colab Pipeline
 
 **Goal:** upload your annotated dataset to Google Drive, run the 10 pipeline

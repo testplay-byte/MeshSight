@@ -1,3 +1,9 @@
+---
+title: "Convert to YOLO"
+nav_order: 5
+parent: Guides
+---
+
 # 🗂️ Guide 04 — Convert the Organized Dataset to YOLO Format
 
 **Goal:** turn the `organized_dataset.zip` from the Colab pipeline into a

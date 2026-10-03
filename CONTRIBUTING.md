@@ -1,3 +1,8 @@
+---
+title: "Contributing"
+nav_order: 4
+---
+
 # 🤝 Contributing / Working on MeshSight
 
 This document is written for **anyone picking the project up cold** — a new

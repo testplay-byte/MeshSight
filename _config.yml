@@ -1,0 +1,23 @@
+theme: just-the-docs
+
+title: MeshSight
+description: Train your own object recognition — from photos to phone, fully self-hosted.
+baseurl: "/MeshSight"
+url: "https://testplay-byte.github.io/MeshSight"
+
+color_scheme: dark
+search_enabled: true
+
+aux_links:
+  View on GitHub:
+    - https://github.com/testplay-byte/MeshSight
+
+aux_links_new_tab: true
+
+heading_anchors: true
+
+footer_content: >-
+  MeshSight — a general, self-trainable object recognition pipeline.
+  Android app + Google Colab dataset tooling.
+
+# Collections: none — plain pages only.

@@ -1,3 +1,9 @@
+---
+title: "Split & Cluster"
+nav_order: 4
+parent: Guides
+---
+
 # ✂️ Guide 03 — Splitting & Clustering: How It Works
 
 **Goal:** understand the two ideas that make MeshSight datasets better than

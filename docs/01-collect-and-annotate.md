@@ -1,3 +1,9 @@
+---
+title: "Collect & Annotate"
+nav_order: 2
+parent: Guides
+---
+
 # 📸 Guide 01 — Collect & Annotate Images
 
 **Goal:** end this guide with an `ANNOTATED/` folder: one sub-folder per

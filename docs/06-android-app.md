@@ -1,3 +1,9 @@
+---
+title: "Android App & APK"
+nav_order: 7
+parent: Guides
+---
+
 # 📱 Guide 06 — The Android App & Getting the APK
 
 **Goal:** install the MeshSight app on your phone, load your model, recognize
