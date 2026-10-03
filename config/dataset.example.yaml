@@ -1,0 +1,20 @@
+# MeshSight example YOLO dataset config
+#
+# This is the file scripts/labelme_to_yolo.py generates for you (dataset.yaml
+# inside the output folder). It is shown here as a template so you understand
+# what the training stage consumes.
+#
+#   path   root of the dataset folder (absolute or relative to this file)
+#   train  training images folder, relative to `path`
+#   val    validation images folder, relative to `path`
+#   names  class id -> class name, in training order (must match classes.txt!)
+
+path: yolo_dataset
+train: images/train
+val: images/val
+
+names:
+  0: cat
+  1: cat_kitten
+  2: dog
+  3: hand

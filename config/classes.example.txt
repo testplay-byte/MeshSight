@@ -1,0 +1,18 @@
+# MeshSight example class list
+#
+# One class name per line, in EXACTLY the order the model was trained on
+# (class index 0 first). The app matches detections to these names by line
+# number, so never reorder without retraining.
+#
+# Usage:
+#   1. Replace these example names with your own classes.
+#   2. In the Android app: Settings → Load Class Labels → pick this file.
+#   3. Without a labels file the app falls back to "Obj 0", "Obj 1", ...
+#
+# tip: scripts/labelme_to_yolo.py already generates a classes.txt next to
+# your dataset.yaml from your real folder names — copy that instead.
+
+cat
+cat_kitten
+dog
+hand

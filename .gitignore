@@ -1,0 +1,61 @@
+# ════════════════════════════════════════════════════════════════════
+# MeshSight — repository ignores
+#
+# Rule of thumb: code and docs go to git, DATA AND WEIGHTS NEVER DO.
+#
+# Android XML resources (layouts, drawables) MUST be committed, so no
+# blanket *.xml here — datasets are ignored by path (data/) and by
+# archive/extension patterns instead.
+# ════════════════════════════════════════════════════════════════════
+
+# ── Datasets & local data (stay on your machine) ─────────────────────
+data/**
+!data/README.md
+
+# ── Archives: dataset packs and backups never belong in git ──────────
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+
+# ── Model weights & training artifacts ───────────────────────────────
+*.tflite
+*.pt
+*.onnx
+*.h5
+*.keras
+*.engine
+runs/
+wandb/
+
+# ── Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ── Android / Gradle build outputs ───────────────────────────────────
+*.iml
+.gradle/
+local.properties
+.idea/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+
+# ── OS noise ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Secrets safety net ───────────────────────────────────────────────
+*.env
+*.key
+*.pem
+serviceAccount*.json
