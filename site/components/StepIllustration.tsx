@@ -11,7 +11,7 @@
 const S = {
   lime: "#BCFF5F",
   sky: "#5FC9FF",
-  coral: "#FF5F7E",
+  coral: "#ff8296",
   dim: "rgba(255,255,255,0.16)",
   soft: "rgba(255,255,255,0.55)",
   fill: "rgba(188,255,95,0.07)",
@@ -174,7 +174,7 @@ function colab() {
       </text>
       <text
         x="443"
-        y="190"
+        y="208"
         textAnchor="middle"
         fill={S.soft}
         fontSize="14"
@@ -373,10 +373,10 @@ function app() {
         classes.txt
       </text>
       <path d="M388 106h-32m10-9-10 9 10 9" stroke={S.dim} strokeWidth="2.5" />
-      <circle cx="240" cy="196" r="5" fill={S.lime} stroke="none" />
+      <circle cx="240" cy="218" r="5" fill={S.lime} stroke="none" />
       <text
         x="254"
-        y="201"
+        y="223"
         fill={S.lime}
         fontSize="13"
         fontWeight="700"

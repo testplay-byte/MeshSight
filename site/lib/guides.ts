@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { githubUrl, headingId } from "./md-utils";
+import { githubUrl, headingId, mdInline } from "./md-utils";
 
 export { githubUrl, headingId };
 
@@ -192,7 +192,7 @@ function extractGoal(content: string): string {
 function extractHeadings(content: string): { id: string; text: string }[] {
   const out: { id: string; text: string }[] = [];
   for (const line of content.split("\n")) {
-    const m = line.match(/^## (?!#)(.+)$/);
+    const m = line.match(/^##[ \t]+(?!#)(.+)$/);
     if (m) {
       const text = m[1].replace(/[*`]/g, "").trim();
       out.push({ id: headingId(text), text });
@@ -204,12 +204,12 @@ function extractHeadings(content: string): { id: string; text: string }[] {
 /** Split a guide into wizard screens: one per `##` section. */
 function parseSteps(content: string): { intro: string; steps: Step[] } {
   // Everything before the first `##` is framing, shown above step 1.
-  const firstHeading = content.search(/^##\s+/m);
+  const firstHeading = content.search(/^##[ \t]+/m);
   const intro = (firstHeading === -1 ? content : content.slice(0, firstHeading)).trim();
 
   // Sections split on `##`; index 0 is the framing text, the rest are screens.
   const sections = content
-    .split(/^##\s+/m)
+    .split(/^##[ \t]+/m)
     .slice(1)
     .filter((s) => s.trim());
 
@@ -219,10 +219,12 @@ function parseSteps(content: string): { intro: string; steps: Step[] } {
     let body = nl === -1 ? "" : sec.slice(nl + 1);
     const stepNo = heading.match(/^Step\s+(\d+)/i);
 
-    // `## Step 3 — Do the thing` → "Do the thing". Sections that aren't
+    // `## Step 3 — Do the thing` → "Do the thing". The separator is required so
+    // `## Step 7 (optional) — Pre-crop locally` keeps its qualifier instead of
+    // collapsing to "(optional) — Pre-crop locally". Sections that aren't
     // numbered steps (reference material in guides 04/07) keep their title.
     const title = heading
-      .replace(/^Step\s+\d+\s*[-—:.]?\s*/i, "")
+      .replace(/^Step\s+\d+\s*[-—:]\s*/i, "")
       .replace(/[*`]/g, "")
       .trim();
     const numbered = Boolean(stepNo);
@@ -243,7 +245,10 @@ function parseSteps(content: string): { intro: string; steps: Step[] } {
       .filter((line) => {
         const m = line.match(/^\s*[-*]\s+\[\s?\]\s+(.+)$/);
         if (m) {
-          checklist.push({ id: `${i}-${checklist.length}`, text: m[1].trim() });
+          checklist.push({
+            id: `${i}-${checklist.length}`,
+            text: mdInline(m[1]),
+          });
           return false;
         }
         return true;
@@ -285,7 +290,11 @@ export function getGuides(): Guide[] {
       outputs: [],
     };
     const goal = extractGoal(content);
+    // Drop the doc's `# Title` line first (it duplicates the frontmatter title
+    // and the wizard renders its own h1), otherwise the Goal strip below can't
+    // match and the raw `**Goal:**` paragraph leaks into step 1's body.
     const stripped = content
+      .replace(/^\s*#\s+.*\n+/, "")
       .replace(/^\s*\*\*Goal:\*\*[^\n]*(?:\n[^\n]+)*?\n\s*\n/, "")
       .trimStart();
     const { intro, steps } = parseSteps(stripped);

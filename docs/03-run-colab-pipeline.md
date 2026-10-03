@@ -13,7 +13,7 @@ The whole pipeline is **11 cells**: one config cell + ten numbered stages.
 Run them **in order** — each one builds on the memory of the last.
 
 <div class="do-this"><strong>The one rule:</strong> the config cell (step 2)
-must be a cell in the notebook, *above* stage 01. The stages do
+must be a cell in the notebook, <em>above</em> stage 01. The stages do
 <code>import config</code> — if you upload <code>config.py</code> as a file
 instead, stage 01 finds it and adds it to the path. Either way works now.
 

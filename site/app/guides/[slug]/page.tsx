@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getGuide, getGuides } from "@/lib/guides";
 import GuideWizard from "@/components/GuideWizard";
 
@@ -26,7 +27,9 @@ export default async function GuidePage({
   const { slug } = await params;
   const guides = getGuides();
   const guide = getGuide(slug);
-  if (!guide) return null;
+  // returning null renders a blank page — in dev, and on any server deploy
+  // (the static export only accidentally covers this via 404.html).
+  if (!guide) notFound();
   return (
     <GuideWizard
       guide={guide}

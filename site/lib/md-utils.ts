@@ -17,3 +17,19 @@ export function githubUrl(relPath: string): string {
   const clean = relPath.replace(/^(\.\/|\.\.\/)+/, "");
   return `https://github.com/testplay-byte/MeshSight/blob/main/${clean}`;
 }
+
+/**
+ * Flatten inline markdown to plain text.
+ * Checklist items are lifted out of the markdown source and rendered as bare
+ * strings in the wizard, so without this a row would literally show the
+ * backticks and asterisks the author typed.
+ */
+export function mdInline(src: string): string {
+  return src
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+}

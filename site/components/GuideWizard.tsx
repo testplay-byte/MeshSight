@@ -37,13 +37,19 @@ export default function GuideWizard({
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const bodyRef = useRef<HTMLElement>(null);
 
   // keep check-offs across refreshes. The load effect must finish before
   // any save runs, or the initial `{}` overwrites the saved value.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(`ms-check:${guide.slug}`);
-      if (raw) setDone(JSON.parse(raw));
+      if (raw) {
+        // a stale or hand-edited value can be null, an array or a scalar —
+        // `done[c.id]` on a null throws and blanks the whole wizard.
+        const v = JSON.parse(raw);
+        if (v && typeof v === "object" && !Array.isArray(v)) setDone(v);
+      }
     } catch {}
     setHydrated(true);
   }, [guide.slug]);
@@ -55,25 +61,47 @@ export default function GuideWizard({
     } catch {}
   }, [guide.slug, done, hydrated]);
 
-  // move focus to the new heading so keyboard users land on the content
-  // instead of re-pressing the (recycled) Next button.
+  // The wizard is position:fixed and .wiz-body is the scroller, so the window
+  // never scrolls — scrollTo on it is a no-op and the new step would open at
+  // the previous step's offset. On mount (i=0) leave focus where the browser
+  // put it so the header's exit link stays reachable without shift-tabbing.
   useEffect(() => {
-    window.scrollTo(0, 0);
-    headingRef.current?.focus();
+    if (i > 0) {
+      bodyRef.current?.scrollTo({ top: 0 });
+      // preventScroll matters here: a bare focus() scrolls the heading into
+      // view, which lands the reader mid-step instead of at its top.
+      headingRef.current?.focus({ preventScroll: true });
+    }
   }, [i]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") router.push("/guides");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
 
   const step: Step | undefined = guide.steps[i];
   const isLast = i === guide.steps.length - 1;
+  // "Step N of M" must count only the steps the author numbered — reference
+  // sections are screens too, and counting them advertised a step that doesn't
+  // exist ("Step 5 of 6" on the last screen of a 5-step guide).
+  const numberedTotal = guide.steps.filter((s) => s.numbered).length;
 
   const mdComponents = useMemo(
     () => ({
       a: ({
         href,
         children,
+        // react-markdown v9 passes an AST `node` through the props spread;
+        // left in, React stringifies it into the DOM as node="[object Object]".
+        node: _node,
         ...rest
       }: {
         href?: string;
         children?: React.ReactNode;
+        node?: unknown;
       }) => {
         // absolute links pass straight through (never github-rewrapped)
         if (!href || /^(https?:|mailto:|#|\/)/.test(href)) {
@@ -137,7 +165,7 @@ export default function GuideWizard({
           </div>
         </div>
         <div className="wiz-head-right">
-          <span className="mono wiz-counter">
+          <span className="mono wiz-counter" aria-hidden="true">
             {i + 1} / {guide.steps.length}
           </span>
           <div className="wiz-progress">
@@ -147,14 +175,23 @@ export default function GuideWizard({
       </header>
 
       {/* step body */}
-      <main className="wiz-body">
+      <main id="main" className="wiz-body" ref={bodyRef}>
         <div className="wiz-step">
-          <p className="label-micro-bold" style={{ marginBottom: 10 }}>
-            {step.numbered ? `Step ${step.n} of ${guide.steps.length}` : "Reference"}
-          </p>
+          {numberedTotal > 0 && (
+            <p className="label-micro-bold" style={{ marginBottom: 10 }} aria-live="polite">
+              {step.numbered ? `Step ${step.n} of ${numberedTotal}` : "Reference"}
+            </p>
+          )}
           <h1 ref={headingRef} tabIndex={-1} className="display-h2">
             {step.title}
           </h1>
+          {/* the step position, announced when focus moves to the heading */}
+          <p className="sr-only" role="status">
+            Step {i + 1} of {guide.steps.length}
+            {numberedTotal > 0 && step.numbered
+              ? `, step ${step.n} of ${numberedTotal}`
+              : ""}
+          </p>
 
           {/* the guide's framing text (goal + any critical callout) */}
           {i === 0 && guide.intro && (

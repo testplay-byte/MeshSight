@@ -77,7 +77,7 @@ then opening <code>hand</code> takes one click.</div>
 ## Step 3 — Set up the working copy
 
 <div class="do-this"><strong>Never annotate over your originals.</strong>
-`data/photos/` is your master copy — copy it into a working folder and
+<code>data/photos/</code> is your master copy — copy it into a working folder and
 annotate there, so a bad first pass can never cost you the originals.</div>
 
 For each class folder:

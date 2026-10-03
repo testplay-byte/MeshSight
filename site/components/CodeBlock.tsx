@@ -11,9 +11,10 @@ export default function CodeBlock({ children }: { children?: React.ReactNode }) 
   const ref = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState(false);
 
-  const text = ref.current?.textContent?.replace(/\n$/, "") ?? "";
-
   async function copy() {
+    // read on click, not during render: on the first render ref.current is
+    // still null, and the handler closure would copy that empty string.
+    const text = ref.current?.textContent?.replace(/\n$/, "") ?? "";
     try {
       await navigator.clipboard.writeText(text);
     } catch {

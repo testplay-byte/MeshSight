@@ -9,14 +9,14 @@ export default function Home() {
   const stages = PHASES.map((p, i) => ({ ...p, guide: bySlug.get(p.guides[0])!, sky: i === 2 }));
 
   return (
-    <div className="flex flex-col" style={{ gap: 40 }}>
+    <main id="main" className="flex flex-col" style={{ gap: 40 }}>
       {/* ── Hero — glass panel (nav carries strongest glass, content lighter) */}
-      <section className="card hero-panel">
+      <section className="card hero-panel" aria-labelledby="hero-title">
         <div className="hero-glow" />
         <div className="hero-inner">
           <Logo className="hero-mark" animated />
           <span className="hero-eyebrow">Self-hosted · On-device · No cloud</span>
-          <h1 className="display-hero hero-title">Train your own object recognition.</h1>
+          <h1 id="hero-title" className="display-hero hero-title">Train your own object recognition.</h1>
           <p className="hero-sub">
             From a folder of photos to live detection on your phone — annotate, split,
             cluster, train, run.
@@ -29,8 +29,8 @@ export default function Home() {
       </section>
 
       {/* ── The flow — glass rail ─────────────────────────────────── */}
-      <section className="glass flow-panel">
-        <p className="label-micro-bold" style={{ marginBottom: 18 }}>
+      <section className="glass flow-panel" aria-labelledby="flow-title">
+        <p id="flow-title" className="label-micro-bold" style={{ marginBottom: 18 }}>
           The flow
         </p>
         <div className="rail-flow">
@@ -56,6 +56,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-    </div>
+    </main>
   );
 }

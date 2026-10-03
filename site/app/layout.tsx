@@ -22,8 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <div className="stage">
           <SiteNav />
+          {/* The wizard supplies its own <main> (it hides site chrome), so
+              this is a plain div for every other route — which is why those
+              routes were missing a main landmark entirely. */}
           <div className="page-wrap fade-in">{children}</div>
 
           {/* footer */}

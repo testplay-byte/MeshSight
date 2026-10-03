@@ -3,12 +3,12 @@ import { IconArrowRight, IconSearch } from "@/components/Icons";
 
 export default function NotFound() {
   return (
-    <div className="card" style={{ marginTop: 40 }}>
+    <main id="main" className="card" style={{ marginTop: 40 }}>
       <div className="empty-state">
         <div className="eb">
           <IconSearch className="ic l" />
         </div>
-        <h3>Page not found</h3>
+        <h1>Page not found</h1>
         <p>
           This page isn't part of the pipeline. The guides cover everything
           from photos to on-device detection.
@@ -22,6 +22,6 @@ export default function NotFound() {
           <IconArrowRight className="ic s" />
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

@@ -21,7 +21,7 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
   }, [query, guides]);
 
   return (
-    <div className="flex flex-col">
+    <main id="main" className="flex flex-col">
       <div className="page-title">
         <div>
           <h1 className="display-h2">Guides</h1>
@@ -29,13 +29,23 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
             Seven steps, one flow — each guide hands you the input the next one needs.
           </div>
         </div>
-        <div className="kp-field" style={{ width: 280, maxWidth: "100%" }}>
+        {/* role="search" + a real label: a placeholder disappears on the
+            first keystroke and is not a reliable accessible name. */}
+        <div
+          className="kp-field"
+          role="search"
+          style={{ width: 280, maxWidth: "100%" }}
+        >
           <span className="lead">
             <IconSearch className="ic s" />
           </span>
+          <label htmlFor="guide-search" className="sr-only">
+            Search the guides
+          </label>
           <input
+            id="guide-search"
             className="kp-input"
-            type="text"
+            type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search steps, files, tools…"
@@ -78,6 +88,6 @@ export default function GuideBrowser({ guides }: { guides: Guide[] }) {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
