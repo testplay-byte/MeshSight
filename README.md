@@ -2,6 +2,9 @@
 
 **Train your own object recognition. Run it on your phone. No cloud, no limits.**
 
+🌐 **Interactive guides & docs site: [testplay-byte.github.io/MeshSight](https://testplay-byte.github.io/MeshSight)** — the full start-to-finish workflow, beautifully laid out.
+📱 **Download the app: [Latest release](https://github.com/testplay-byte/MeshSight/releases)** — the debug APK is rebuilt automatically on every change to the app.
+
 MeshSight is a complete, self-hosted pipeline for building custom object
 detectors: collect photos, draw polygon annotations, let an AI-assisted
 pipeline split and organize them into tight visual sub-classes, train a
@@ -35,13 +38,15 @@ loop — data → model → app — yours:
 
 | Folder | What's inside |
 |---|---|
-| [`docs/`](docs/) | **Start-to-finish guides** — follow them in order |
+| [`docs/`](docs/) | **Start-to-finish guides** — follow them in order (also rendered on the [site](https://testplay-byte.github.io/MeshSight)) |
+| [`site/`](site/) | Next.js source for the GitHub Pages site (auto-built by CI) |
 | [`android/`](android/) | Kotlin Android app (CameraX + TFLite) |
 | [`colab/`](colab/) | The 10-stage Google Colab dataset pipeline |
 | [`scripts/`](scripts/) | Local converters: CVAT→LabelMe, crop, LabelMe→YOLO |
 | [`config/`](config/) | Example class lists and dataset config templates |
+| [`brand/`](brand/) | MeshSight logo (SVG) and identity assets |
 | [`data/`](data/README.md) | **Stays local** — your datasets live here (gitignored) |
-| [`.github/workflows/`](.github/workflows/) | CI: builds the APK on GitHub runners |
+| [`.github/workflows/`](.github/workflows/) | CI: builds the APK (→ Releases) and deploys the site (→ Pages) |
 
 ## Quick start
 

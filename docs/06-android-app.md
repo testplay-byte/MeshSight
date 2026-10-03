@@ -10,16 +10,18 @@ parent: Guides
 your objects. Includes how APKs are built (GitHub Actions — nothing heavy on
 your machine).
 
-## Getting the APK — GitHub Actions
+## Getting the APK — GitHub Releases
 
 The app is never compiled locally in this project; CI does it:
 
-1. Push to the repo (any branch touching `android/`).
-2. **Actions tab → "Android CI"** runs automatically:
-   assembles debug + release APKs on a GitHub runner and uploads them as
-   workflow artifacts (`meshsight-debug-apk`, `meshsight-release-apk`).
-3. Open the run → **Artifacts** section → download the zip → unzip → you have
-   `app-debug.apk` (~30 MB, includes TFLite native libs).
+1. Every push to `main` that touches `android/` triggers **"Android CI"**,
+   which assembles the debug APK on a GitHub runner.
+2. The build is published automatically to the repo's **[Releases
+   page](https://github.com/testplay-byte/MeshSight/releases)** as the
+   rolling **"latest"** debug build, with two downloadable assets:
+   - `MeshSight-debug.apk` — install directly on your phone
+   - `MeshSight-debug.zip` — the same APK, compressed (smaller download)
+3. Download either file → unzip if needed → install.
 
 You can also press **Run workflow** (workflow_dispatch) for a manual build
 from any branch.
@@ -30,15 +32,14 @@ from any branch.
 
 ### Installing on the phone
 
-1. Copy `app-debug.apk` to the phone (Drive, cable, anything).
+1. Copy `MeshSight-debug.apk` to the phone (Drive, cable, anything).
 2. Tap it → allow "install unknown apps" for that source (debug builds aren't
    Play-signed; that's expected).
 3. Launch → grant **Camera** permission when asked.
 
 *(Optional future step: add release signing secrets — `KEYSTORE`, `KEY_ALIAS`,
 `KEY_PASSWORD` — to repo Settings → Secrets, and wire signing into
-`android/app/build.gradle.kts`. Until then, the release APK is unsigned and
-debug builds are the install path.)*
+`android/app/build.gradle.kts`. Until then, debug builds are the install path.)*
 
 ## Using the app
 

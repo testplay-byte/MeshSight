@@ -28,7 +28,14 @@ meshsight/
 ├── config/     Templates/examples only (.example.*). Never real class data.
 ├── data/       Local-only datasets. README.md is the single committed file.
 ├── docs/       The start-to-finish guides, numbered by pipeline order.
-└── .github/    CI workflows (APK build + python lint).
+│               These are ALSO the content of the website's guide pages —
+│               site/ renders them, so keep them current with behavior.
+├── site/       Next.js 16 + Tailwind 4 static-export website (GitHub Pages).
+│               Reads ../docs/*.md at build time. Design tokens live in
+│               app/globals.css and are documented in docs/DESIGN.md.
+├── brand/      Logo SVG + identity assets. The logo must not be recolored
+│               or restyled without a decision from the maintainer.
+└── .github/    CI: android-ci (APK → Releases), site-ci (Pages), python-ci.
 ```
 
 ## 3. Hard rules (non-negotiable)
@@ -72,8 +79,11 @@ meshsight/
 - **Colab stages:** run in a Colab notebook, small dataset (~20 images).
   Stages depend on each other's memory — a restart means re-run from 01.
 - **Android:** you do **not** build locally. Push the branch; the
-  `Android CI` workflow compiles debug+release APKs and uploads artifacts.
-  Install on a device from the artifact zip to verify UI behavior.
+  `Android CI` workflow compiles the debug APK and publishes it to the
+  repo's Releases (`latest` tag). Install from there to verify UI behavior.
+- **Site:** `cd site && npm install && npm run build` must pass — it
+  type-checks and static-exports every page to `site/out/`. For visual
+  work run `npm run dev` and open http://localhost:3000/MeshSight.
 - **Before every push:** `git status` and check nothing under
   `data/`, no `*.tflite`, no `local.properties`.
 
