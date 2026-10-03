@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { IconArrowLeft, IconArrowRight } from "@/components/Icons";
+import CodeBlock from "@/components/CodeBlock";
 import StepIllustration from "@/components/StepIllustration";
 import Toc from "@/components/Toc";
 import { getGuides, githubUrl, headingId, type Guide } from "@/lib/guides";
@@ -79,6 +81,9 @@ const MD_COMPONENTS = (currentSlug: string) => ({
       {children}
     </a>
   ),
+  pre: ({ children }: { children?: React.ReactNode }) => (
+    <CodeBlock>{children}</CodeBlock>
+  ),
   h2: ({ children }: { children?: React.ReactNode }) => (
     <h2 id={headingId(nodeText(children))}>{children}</h2>
   ),
@@ -97,7 +102,12 @@ function renderWithIllustrations(guide: Guide) {
   const components = MD_COMPONENTS(guide.slug);
   return parts.map((part, i) =>
     i % 2 === 0 ? (
-      <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} components={components}>
+      <ReactMarkdown
+        key={i}
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
+        components={components}
+      >
         {part}
       </ReactMarkdown>
     ) : (

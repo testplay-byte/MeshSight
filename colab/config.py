@@ -72,3 +72,22 @@ MIN_GROUP_SIZE_FOR_CLUSTER = 5   # smaller groups skip clustering → Label_C1
 # minimum (auto-tuned to at most 1/3 of the group size, floor of 3).
 
 __all__ = [name for name in dir() if name.isupper()]
+
+
+# ════════════════════════════════════════════════════════════════════
+# SELF-REGISTRATION (fixes "ModuleNotFoundError: No module named
+# 'config'" in Colab when this file is pasted as a cell instead of
+# being uploaded as config.py). Registers this file's settings as the
+# `config` module so every later stage can simply `import config`.
+# No-op when the file is already a real module on disk.
+# ════════════════════════════════════════════════════════════════════
+import sys as _sys
+import types as _types
+
+if "config" not in _sys.modules:
+    _shim = _types.ModuleType("config")
+    _shim.__doc__ = "MeshSight pipeline settings (auto-registered from a pasted cell)."
+    for _k, _v in list(globals().items()):
+        if _k.isupper() or _k in ("__all__",):
+            setattr(_shim, _k, _v)
+    _sys.modules["config"] = _shim

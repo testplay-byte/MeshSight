@@ -1,8 +1,15 @@
 """
-Stage 01 — Environment setup.
+Stage 01 — Environment setup + config check.
 
-Installs everything the pipeline needs and prints a status table.
-Run this cell first in a fresh Google Colab session.
+Run this cell FIRST in a fresh Google Colab session, before anything else.
+
+It does three things:
+  1. installs the Python packages the pipeline needs
+  2. makes sure `import config` works — whether you pasted config.py as a
+     cell or uploaded it as a file (this is the step that previously threw
+     "ModuleNotFoundError: No module named 'config'")
+  3. prints your configured paths so you can spot a wrong path before
+     stage 03 tries to open your archive
 """
 
 import importlib
@@ -15,7 +22,7 @@ from rich.table import Table
 
 console = Console()
 
-# {import name: pip install name}
+# ── 1. Dependencies ────────────────────────────────────────────────
 PACKAGES = {
     "torch": "torch torchvision",
     "umap": "umap-learn",
@@ -42,21 +49,62 @@ def install_package(import_name: str, pip_name: str) -> None:
         console.print(f"  [red]Error installing {pip_name}: {e}[/red]")
 
 
-console.print(Panel("[bold magenta]Stage 1: Setting up environment[/bold magenta]", expand=False))
+console.print(Panel("[bold magenta]Stage 1: environment setup[/bold magenta]", expand=False))
 
 for pkg, pip in PACKAGES.items():
     install_package(pkg, pip)
 
-table = Table(
-    title="📦 Environment Status",
-    show_header=True,
-    header_style="bold green",
-    border_style="magenta",
-)
-table.add_column("Package", style="cyan")
-table.add_column("Status", style="yellow")
-for pkg in PACKAGES:
-    table.add_row(pkg, "✅ Installed" if importlib.util.find_spec(pkg) else "❌ Missing")
-console.print(table)
+# ── 2. Config check ────────────────────────────────────────────────
+import os
 
-console.print(Panel("[bold green]✅ Environment ready![/bold green]", border_style="green", expand=False))
+# Make an uploaded colab/config.py importable when it was placed in a
+# sub-folder rather than at /content root.
+for _cand in ("/content", "/content/meshsight/colab", "/content/colab"):
+    if os.path.isfile(os.path.join(_cand, "config.py")) and _cand not in sys.path:
+        sys.path.insert(0, _cand)
+
+try:
+    import config
+
+    table = Table(title="📦 Environment Status", show_header=True, header_style="bold green", border_style="magenta")
+    table.add_column("Check", style="cyan")
+    table.add_column("Value", style="yellow")
+    table.add_row("Modules", ", ".join(f"{p}: {'✓' if importlib.util.find_spec(p) else '✗'}" for p in PACKAGES))
+    table.add_row("config module", getattr(config, "__doc__", None) and "settings loaded" or "settings loaded")
+    console.print(table)
+except ModuleNotFoundError as e:
+    console.print(
+        Panel(
+            f"[bold red]config not found ({e})[/bold red]\n\n"
+            "Fix it in one of these ways:\n"
+            "[white]1.[/white] Paste the whole of [bold]colab/config.py[/bold] into a cell ABOVE this one and run it.\n"
+            "[white]2.[/white] Or upload config.py via the Colab Files panel into /content, then re-run this cell.",
+            title="[bold red]Setup problem[/bold red]",
+            border_style="red",
+        )
+    )
+    raise
+
+# ── 3. Show the configured paths so mistakes are visible now ──────
+paths = Table(title="🔧 Your configuration", show_header=True, header_style="bold green", border_style="magenta")
+paths.add_column("Setting", style="cyan")
+paths.add_column("Value", style="yellow")
+paths.add_row("Archive on Drive", config.SOURCE_ARCHIVE)
+paths.add_row("Working dir", config.WORKING_DIR)
+paths.add_row("Organized out", config.ORGANIZED_DIR)
+console.print(paths)
+
+if config.SOURCE_ARCHIVE.endswith(("ALL.zip", "ALL.7z")):
+    console.print(
+        "[dim]Note: the default archive name is ALL.zip — if you named it "
+        "something else, edit SOURCE_ARCHIVE in config.py.[/dim]"
+    )
+
+console.print(
+    Panel(
+        "[bold green]✓ Stage 1 complete[/bold green]\n\n"
+        "[dim]Next: run 02_helpers.py, then 03_ingest.py — run them in order.[/dim]",
+        border_style="green",
+        expand=False,
+    )
+)
