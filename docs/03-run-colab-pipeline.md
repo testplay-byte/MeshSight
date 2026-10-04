@@ -417,10 +417,10 @@ never need this cell.
 
 ## Step 4 — Cell 2 · Load the helpers
 
-Load the shared helpers
+Load the polygon helpers that Cell 4 uses.
 
 ```python
-# MeshSight · Cell 2 of 10 — Load the shared helpers
+# MeshSight · Cell 2 of 10 — shared helpers
 # Source: colab/02_helpers.py  (paste this whole block into a new cell)
 ##############################################################
 """
@@ -441,9 +441,12 @@ from rich.panel import Panel
 
 import config
 
-# Make this directory importable when the stages are run from a notebook cell
-# or via runpy, where the script's own folder is not necessarily on sys.path.
-_HERE = str(Path(__file__).resolve().parent)
+# `__file__` exists only when this runs from disk. Pasted into a notebook
+# cell it does not, so fall back to where the pipeline is cloned.
+try:
+    _HERE = str(Path(__file__).resolve().parent)
+except NameError:
+    _HERE = "/content/meshsight/colab"
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
@@ -544,10 +547,10 @@ console.print(Panel(
 
 ## Step 6 — Cell 4 · One crop per object
 
-One crop per annotated object
+One crop per annotated object.
 
 ```python
-# MeshSight · Cell 4 of 10 — One crop per annotated object
+# MeshSight · Cell 4 of 10 — split and crop
 # Source: colab/04_process_images.py  (paste this whole block into a new cell)
 ##############################################################
 """
@@ -580,7 +583,12 @@ import config
 # stage is simply not there. That mistake silently skipped all 76 images.
 import sys
 
-_HERE = str(Path(__file__).resolve().parent)
+# `__file__` exists only when this runs from disk. Pasted into a notebook
+# cell it does not, so fall back to where the pipeline is cloned.
+try:
+    _HERE = str(Path(__file__).resolve().parent)
+except NameError:
+    _HERE = "/content/meshsight/colab"
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 

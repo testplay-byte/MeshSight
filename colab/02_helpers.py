@@ -16,9 +16,12 @@ from rich.panel import Panel
 
 import config
 
-# Make this directory importable when the stages are run from a notebook cell
-# or via runpy, where the script's own folder is not necessarily on sys.path.
-_HERE = str(Path(__file__).resolve().parent)
+# `__file__` exists only when this runs from disk. Pasted into a notebook
+# cell it does not, so fall back to where the pipeline is cloned.
+try:
+    _HERE = str(Path(__file__).resolve().parent)
+except NameError:
+    _HERE = "/content/meshsight/colab"
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
