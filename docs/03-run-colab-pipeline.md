@@ -45,25 +45,27 @@ your archive is, and installs the packages.
 [[illustration:notebook]]
 
 ```python
-# MeshSight · Cell 1 — settings and setup
-import sys
-sys.path.insert(0, "/content/meshsight/colab")
+# MeshSight · Cell 1 of 10 — fetch, set archive, install
+import os, sys, runpy, subprocess
 
-import os, subprocess
 REPO = "/content/meshsight"
+COLAB = f"{REPO}/colab"
+
+# 1. Fetch the pipeline: clone the first time, update every time after
 if os.path.exists(f"{REPO}/.git"):
     subprocess.run(["git", "-C", REPO, "pull", "--ff-only", "-q"], check=False)
 else:
     subprocess.run(["git", "clone", "--depth", "1",
                     "https://github.com/testplay-byte/MeshSight.git", REPO], check=True)
-sys.path.insert(0, f"{REPO}/colab")
 
-from cell_boot import save_settings, run_stage
+sys.path.insert(0, COLAB)
 
-# ← edit this one line if your zip is named something else
-save_settings("/content/drive/MyDrive/MeshSight/DATA/ALL.zip")
+# 2. Point it at your archive. This is the only line you ever edit.
+import config
+config.SOURCE_ARCHIVE = "/content/drive/MyDrive/MeshSight/DATA/ALL.zip"
 
-run_stage("01_setup")
+# 3. Run stage 01: installs packages, repairs Pillow, prints your settings
+runpy.run_path(f"{COLAB}/01_setup.py", run_name="__main__")
 ```
 
 > Every later cell reads this saved path, so **this is the only cell you need
@@ -75,8 +77,9 @@ run_stage("01_setup")
 # MeshSight · Cell 2 — shared helpers
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("02_helpers")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/02_helpers.py", run_name="__main__")
 ```
 
 ## Step 5 — Cell 3 · Unpack your archive
@@ -87,8 +90,9 @@ This mounts Drive and extracts `ALL.zip`.
 # MeshSight · Cell 3 — ingest
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("03_ingest")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/03_ingest.py", run_name="__main__")
 ```
 
 - [ ] Raw files extracted to `/content/meshsight_processing/raw`
@@ -102,8 +106,9 @@ its own crop.
 # MeshSight · Cell 4 — split and crop
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("04_process_images")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/04_process_images.py", run_name="__main__")
 ```
 
 Read the report at the end:
@@ -122,8 +127,9 @@ Downloads DINOv2 on first run, so give it a few minutes.
 # MeshSight · Cell 5 — DINOv2 features
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("05_features")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/05_features.py", run_name="__main__")
 ```
 
 ## Step 8 — Cell 6 · Reduce to 2D
@@ -132,8 +138,9 @@ run_stage("05_features")
 # MeshSight · Cell 6 — UMAP
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("06_reduce")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/06_reduce.py", run_name="__main__")
 ```
 
 ## Step 9 — Cell 7 · Cluster into variants
@@ -142,8 +149,9 @@ run_stage("06_reduce")
 # MeshSight · Cell 7 — HDBSCAN clustering
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("07_cluster")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/07_cluster.py", run_name="__main__")
 ```
 
 Note how many sub-classes each label produced — `cat_C1`, `cat_C2`, …
@@ -154,8 +162,9 @@ Note how many sub-classes each label produced — `cat_C1`, `cat_C2`, …
 # MeshSight · Cell 8 — organize
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("08_organize")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/08_organize.py", run_name="__main__")
 ```
 
 ## Step 11 — Cell 9 · Build the visual map
@@ -164,8 +173,9 @@ run_stage("08_organize")
 # MeshSight · Cell 9 — visual map
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("09_visual_map")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/09_visual_map.py", run_name="__main__")
 ```
 
 ## Step 12 — Cell 10 · Package and download
@@ -176,8 +186,9 @@ The last cell zips everything and offers the download.
 # MeshSight · Cell 10 — package
 import sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import run_stage
-run_stage("10_package")
+import config
+import runpy
+runpy.run_path("/content/meshsight/colab/10_package.py", run_name="__main__")
 ```
 
 - [ ] `organized_dataset.zip` downloaded
@@ -215,14 +226,21 @@ any cell:
 
 ```python
 # MeshSight — where things stand
-import sys
+import os, sys
 sys.path.insert(0, "/content/meshsight/colab")
-from cell_boot import status
-status()
-```
+import config
 
-It prints your archive path, which stages exist, how many crops are on disk,
-and whether the output zip is ready.
+bar = "=" * 62
+print(f"\n{bar}\n  MeshSight — current state\n{bar}")
+print(f"  archive        : {config.SOURCE_ARCHIVE}")
+print(f"  working dir    : {config.WORKING_DIR}")
+print(f"  organized out  : {config.ORGANIZED_DIR}")
+clean = config.CLEAN_DIR
+print(f"  crops on disk  : {len(os.listdir(clean)) if os.path.isdir(clean) else 0}")
+print(f"  output zip     : {config.OUTPUT_ZIP}"
+      f" {'(ready)' if os.path.exists(config.OUTPUT_ZIP) else '(not yet)'}")
+print()
+```
 
 <details class="guide-box">
   <summary><span class="chev">▾</span>I'd rather run the whole thing in one cell</summary>
@@ -243,9 +261,11 @@ else:
                     "https://github.com/testplay-byte/MeshSight.git", REPO], check=True)
 sys.path.insert(0, COLAB)
 
-from cell_boot import save_settings, STAGES
-save_settings("/content/drive/MyDrive/MeshSight/DATA/ALL.zip")
+import config
+config.SOURCE_ARCHIVE = "/content/drive/MyDrive/MeshSight/DATA/ALL.zip"
 
+STAGES = ["01_setup", "02_helpers", "03_ingest", "04_process_images", "05_features",
+          "06_reduce", "07_cluster", "08_organize", "09_visual_map", "10_package"]
 for stage in STAGES:
     try:
         runpy.run_path(os.path.join(COLAB, f"{stage}.py"), run_name="__main__")
@@ -269,7 +289,7 @@ print(f"\n{'=' * 62}\n  ✓ Done — download organized_dataset.zip\n{'=' * 62}"
 
 | Error | Fix |
 |---|---|
-| `ModuleNotFoundError: No module named 'cell_boot'` | Cell 1 hasn't run yet, or the clone failed. Run Cell 1 and check it prints the Stage 1 banner |
+| `ModuleNotFoundError: No module named 'config'` | Cell 1 hasn't run yet, or the clone failed. Run Cell 1 — it should print the Stage 1 banner |
 | `ValueError: Unknown stage` | Typo in the stage name. It must be exactly one of the ten in Step 3's table |
 | `FileNotFoundError` at cell 3 | Archive path is wrong. Re-run Cell 1 with the correct path — it is the only cell that stores it |
 | Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, Step 7 |
