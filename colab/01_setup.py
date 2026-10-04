@@ -199,9 +199,19 @@ repair_pillow(PILLOW_VERSION_AT_START)
 # ── 2. Config check ────────────────────────────────────────────────
 import os
 
-# Make an uploaded colab/config.py importable when it was placed in a
-# sub-folder rather than at /content root.
-for _cand in ("/content", "/content/meshsight/colab", "/content/colab"):
+# Fetch the pipeline if it isn't here yet, so this cell works as the very
+# first thing pasted into a completely fresh runtime. After the first run the
+# repo lives at /content/meshsight and re-runs just refresh it — which is what
+# stops a cell from silently using an old copy after a fix lands on GitHub.
+_REPO = "/content/meshsight"
+_REPO_URL = "https://github.com/testplay-byte/MeshSight.git"
+if os.path.isdir(f"{_REPO}/.git"):
+    subprocess.run(["git", "-C", _REPO, "pull", "--ff-only", "-q"], check=False)
+elif not os.path.isdir(_REPO):
+    console.print(f"  [dim]Fetching the pipeline from {_REPO_URL}...[/dim]")
+    subprocess.run(["git", "clone", "--depth", "1", _REPO_URL, _REPO], check=True)
+
+for _cand in (_REPO + "/colab", "/content", "/content/colab"):
     if os.path.isfile(os.path.join(_cand, "config.py")) and _cand not in sys.path:
         sys.path.insert(0, _cand)
 
