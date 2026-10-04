@@ -71,10 +71,10 @@ function collect() {
       </text>
       <circle cx="252" cy="182" r="3.5" fill={S.sky} stroke="none" />
       <circle cx="252" cy="208" r="3.5" fill={S.sky} stroke="none" />
-      <text x="300" y="188" fill="rgba(255,255,255,0.3)" fontSize="16" fontFamily="ui-monospace, monospace">
+      <text x="330" y="188" fill="rgba(255,255,255,0.3)" fontSize="16" fontFamily="ui-monospace, monospace">
         62
       </text>
-      <text x="300" y="214" fill="rgba(255,255,255,0.3)" fontSize="16" fontFamily="ui-monospace, monospace">
+      <text x="330" y="214" fill="rgba(255,255,255,0.3)" fontSize="16" fontFamily="ui-monospace, monospace">
         48
       </text>
     </Frame>
@@ -443,10 +443,197 @@ function map() {
   );
 }
 
+/* ── Scenes added for the reworked guides ───────────────────────── */
+
+/* tool: choose one annotator up front (LabelMe recommended) */
+function tool() {
+  return (
+    <Frame label="Choosing between LabelMe and CVAT before you start">
+      <rect x="34" y="62" width="222" height="152" rx="18" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <circle cx="232" cy="86" r="14" fill={S.lime} stroke="none" />
+      <path d="M225 86l5 5 9-11" stroke="#0d1512" strokeWidth="2.5" />
+      <text x="145" y="142" textAnchor="middle" fill={S.lime} fontSize="21" fontWeight="700" fontFamily="ui-monospace, monospace">
+        LabelMe
+      </text>
+      <text x="145" y="172" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        desktop, simplest
+      </text>
+      <rect x="304" y="62" width="222" height="152" rx="18" stroke={S.dim} strokeWidth="2.5" />
+      <text x="415" y="142" textAnchor="middle" fill={S.soft} fontSize="21" fontWeight="700" fontFamily="ui-monospace, monospace">
+        CVAT
+      </text>
+      <text x="415" y="172" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="15" fontFamily="ui-monospace, monospace">
+        browser, for teams
+      </text>
+    </Frame>
+  );
+}
+
+/* launch: type one word in a terminal, the app opens */
+function launch() {
+  return (
+    <Frame label="Typing labelme in a terminal to open the annotator">
+      <rect x="30" y="76" width="210" height="128" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M30 104h210" stroke={S.dim} strokeWidth="1.5" />
+      <circle cx="50" cy="90" r="4" fill={S.dim} stroke="none" />
+      <circle cx="64" cy="90" r="4" fill={S.dim} stroke="none" />
+      <circle cx="78" cy="90" r="4" fill={S.dim} stroke="none" />
+      <text x="48" y="140" fill={S.soft} fontSize="18" fontFamily="ui-monospace, monospace">
+        $
+      </text>
+      <text x="70" y="140" fill={S.lime} fontSize="18" fontWeight="600" fontFamily="ui-monospace, monospace">
+        labelme
+      </text>
+      <rect x="146" y="126" width="11" height="18" rx="2" fill={S.lime} stroke="none" />
+      <text x="48" y="176" fill="rgba(255,255,255,0.28)" fontSize="14" fontFamily="ui-monospace, monospace">
+        the window opens
+      </text>
+      <Arrow x={252} y={140} />
+      <rect x="330" y="66" width="200" height="148" rx="16" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M330 96h200" stroke={S.lime} strokeWidth="1.5" opacity="0.4" />
+      <rect x="350" y="112" width="76" height="56" rx="8" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M372 154c-5-8-3-21 7-27 3-8 8-11 11-11s8 3 11 11c10 6 12 19 7 27-6 5-30 5-36 0Z" stroke={S.lime} strokeWidth="2.5" />
+      <rect x="440" y="112" width="74" height="26" rx="7" fill={S.lime} stroke="none" />
+      <text x="477" y="130" textAnchor="middle" fill="#0d1512" fontSize="14" fontWeight="700" fontFamily="ui-monospace, monospace">
+        cat
+      </text>
+      <rect x="440" y="150" width="74" height="26" rx="7" stroke={S.sky} strokeWidth="2.5" />
+      <text x="477" y="168" textAnchor="middle" fill={S.sky} fontSize="14" fontWeight="700" fontFamily="ui-monospace, monospace">
+        save
+      </text>
+    </Frame>
+  );
+}
+
+/* annotated: every image paired with its own .json */
+function annotated() {
+  const rows: [number, string, string][] = [
+    [110, "cat_001.jpg", S.lime],
+    [138, "cat_001.json", S.sky],
+    [174, "cat_002.jpg", S.lime],
+    [202, "cat_002.json", S.sky],
+  ];
+  return (
+    <Frame label="Each photo sitting next to its matching annotation file">
+      <path
+        d="M30 56h60l12 14h148a8 8 0 0 1 8 8v140a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V64a8 8 0 0 1 8-8Z"
+        stroke={S.lime}
+        strokeWidth="2.5"
+        fill={S.fill}
+      />
+      <path d="M22 92h244" stroke={S.lime} strokeWidth="1.5" opacity="0.4" />
+      {rows.map(([y, name, colour]) => (
+        <g key={name}>
+          <rect x="42" y={y - 12} width="20" height="20" rx="5" stroke={colour} strokeWidth="2" />
+          <text x="74" y={y + 3} fill={colour} fontSize="15" fontFamily="ui-monospace, monospace">
+            {name}
+          </text>
+        </g>
+      ))}
+      <Arrow x={280} y={140} />
+      <circle cx="404" cy="132" r="42" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M384 132l14 14 26-30" stroke={S.lime} strokeWidth="3.5" />
+      <text x="404" y="206" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        every image
+      </text>
+      <text x="404" y="230" textAnchor="middle" fill={S.lime} fontSize="15" fontWeight="600" fontFamily="ui-monospace, monospace">
+        .jpg + .json
+      </text>
+    </Frame>
+  );
+}
+
+/* zip: the class folders themselves become the archive */
+function zip() {
+  return (
+    <Frame label="Zipping the class folders into ALL.zip with no wrapper folder">
+      <path d="M30 76h50l12 16h78a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V84a8 8 0 0 1 8-8Z" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <text x="98" y="112" textAnchor="middle" fill={S.lime} fontSize="16" fontFamily="ui-monospace, monospace">
+        cat/
+      </text>
+      <path d="M30 156h50l12 16h78a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8v-58a8 8 0 0 1 8-8Z" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <text x="98" y="192" textAnchor="middle" fill={S.sky} fontSize="16" fontFamily="ui-monospace, monospace">
+        hand/
+      </text>
+      <Arrow x={216} y={140} />
+      <rect x="312" y="70" width="196" height="140" rx="16" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M344 82v30m0 14v26m0 14v32" stroke={S.lime} strokeWidth="2.5" opacity="0.6" />
+      <rect x="334" y="112" width="20" height="10" rx="4" fill={S.lime} stroke="none" />
+      <rect x="334" y="152" width="20" height="10" rx="4" fill={S.lime} stroke="none" />
+      <text x="410" y="188" textAnchor="middle" fill={S.lime} fontSize="19" fontWeight="600" fontFamily="ui-monospace, monospace">
+        ALL.zip
+      </text>
+      <text x="410" y="238" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        no wrapper folder
+      </text>
+    </Frame>
+  );
+}
+
+/* drive: the archive lands on Google Drive */
+function drive() {
+  return (
+    <Frame label="Uploading the archive to a folder on Google Drive">
+      <rect x="30" y="96" width="126" height="88" rx="14" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <path d="M76 140h34m-11-10 11 10-11 10" stroke={S.sky} strokeWidth="2.5" />
+      <text x="93" y="206" textAnchor="middle" fill={S.sky} fontSize="15" fontFamily="ui-monospace, monospace">
+        ALL.zip
+      </text>
+      <Arrow x={176} y={140} />
+      <path
+        d="M300 128a30 30 0 0 1 30-30 40 40 0 0 1 76 6 28 28 0 0 1 4 56H306a16 16 0 0 1-6-32Z"
+        stroke={S.lime}
+        strokeWidth="2.5"
+        fill={S.fill}
+      />
+      <text x="368" y="200" textAnchor="middle" fill={S.lime} fontSize="16" fontWeight="600" fontFamily="ui-monospace, monospace">
+        MyDrive
+      </text>
+      <text x="368" y="224" textAnchor="middle" fill={S.soft} fontSize="14" fontFamily="ui-monospace, monospace">
+        DATA/
+      </text>
+      <circle cx="470" cy="96" r="15" fill={S.lime} stroke="none" />
+      <path d="M462 96l6 6 10-12" stroke="#0d1512" strokeWidth="2.5" />
+    </Frame>
+  );
+}
+
+/* cells: eleven stages collapse into one copy-paste cell */
+function cells() {
+  return (
+    <Frame label="Replacing eleven separate cells with a single copy-paste cell">
+      <rect x="26" y="66" width="152" height="34" rx="9" stroke={S.dim} strokeWidth="2.5" />
+      <rect x="26" y="110" width="152" height="34" rx="9" stroke={S.dim} strokeWidth="2.5" />
+      <rect x="26" y="154" width="152" height="34" rx="9" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M46 80h84M46 124h60M46 168h72" stroke={S.soft} strokeWidth="2.5" opacity="0.5" />
+      <path d="M196 62l-14 130" stroke={S.coral} strokeWidth="3" />
+      <text x="102" y="220" textAnchor="middle" fill={S.coral} fontSize="15" fontWeight="600" fontFamily="ui-monospace, monospace">
+        11 cells
+      </text>
+      <Arrow x={196} y={126} />
+      <rect x="296" y="60" width="234" height="132" rx="14" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M318 86h72M318 108h168M318 130h96M318 152h140" stroke={S.lime} strokeWidth="2.5" opacity="0.7" />
+      <rect x="404" y="72" width="104" height="24" rx="7" fill={S.lime} stroke="none" />
+      <text x="456" y="89" textAnchor="middle" fill="#0d1512" fontSize="13" fontWeight="700" fontFamily="ui-monospace, monospace">
+        run all
+      </text>
+      <text x="413" y="220" textAnchor="middle" fill={S.lime} fontSize="15" fontWeight="600" fontFamily="ui-monospace, monospace">
+        1 cell
+      </text>
+    </Frame>
+  );
+}
+
 /** Registry - referenced by [[illustration:name]] markers in the guides. */
 const REGISTRY: Record<string, () => React.ReactNode> = {
   collect,
+  tool,
+  launch,
   annotate,
+  annotated,
+  zip,
+  drive,
+  cells,
   colab,
   "split-cluster": splitCluster,
   map,

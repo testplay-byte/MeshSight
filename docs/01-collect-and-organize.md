@@ -11,8 +11,6 @@ Guide 02.
 This is the cheapest step to get right and the most expensive to get wrong:
 every quality problem here multiplies later.
 
-[[illustration:collect]]
-
 ## Step 1 — Decide your classes
 
 Write down what you want the model to recognize, as simple nouns:
@@ -21,9 +19,9 @@ Write down what you want the model to recognize, as simple nouns:
 - Keep class names lowercase, one word or snake_case (`cereal_box`)
 - Start with **2–4 classes**. You can always add more later.
 
-> 💡 The pipeline will refine these classes for you later (Guide 04) —
-> "cat" becomes cat_C1, cat_C2, ... So don't worry about splitting breeds
-> yet. Just collect what you care about.
+> The pipeline refines these for you later (Guide 04) — "cat" becomes `cat_C1`,
+> `cat_C2`, … So don't worry about splitting breeds yet. Just collect what you
+> care about.
 
 ## Step 2 — Gather photos
 
@@ -49,6 +47,8 @@ than 500 near-identical ones.
 
 ## Step 3 — Organize the folders
 
+[[illustration:collect]]
+
 Create a working area on your machine and sort photos into one folder per
 class:
 
@@ -72,12 +72,10 @@ delete from it — every later step reads from it and writes elsewhere.
 
 ## Step 4 — Check yourself
 
-Before moving on:
-
 - [ ] One folder per class under `data/photos/`
 - [ ] Class names are lowercase / snake_case
 - [ ] Every folder has enough varied photos (50+ recommended)
 - [ ] The originals are backed up or left untouched
 
-**Next →** [Guide 02 — Annotate the data](02-annotate.md): draw polygons
-around every object and export them in LabelMe format.
+**Next →** [Guide 02 — Annotate the data](02-annotate.md): pick your tool,
+draw polygons around every object, and export `ALL.zip`.

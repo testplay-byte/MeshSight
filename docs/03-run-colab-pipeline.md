@@ -6,192 +6,190 @@ parent: Guides
 
 # ▶️ Guide 03 — Run the Colab Pipeline
 
-**Goal:** upload your `ALL.zip` to Drive, run 11 cells in Colab, and download
-the organized, clustered dataset plus its visual map.
+**Goal:** upload `ALL.zip` to Drive, paste **one cell**, and download the
+organized, clustered dataset plus a visual map of what it found.
 
-The whole pipeline is **11 cells**: one config cell + ten numbered stages.
-Run them **in order** — each one builds on the memory of the last.
-
-<div class="do-this"><strong>The one rule:</strong> the config cell (step 2)
-must be a cell in the notebook, <em>above</em> stage 01. The stages do
-<code>import config</code> — if you upload <code>config.py</code> as a file
-instead, stage 01 finds it and adds it to the path. Either way works now.
-
-  </div>
+No installs, no uploading scripts, no editing ten files. The cell below does
+all of it.
 
 [[illustration:colab]]
 
-## Step 1 — Upload `ALL.zip` to Google Drive
+## Step 1 — Put `ALL.zip` on Google Drive
+
+[[illustration:drive]]
+
+1. Open [drive.google.com](https://drive.google.com)
+2. Create the folder `MyDrive/MeshSight/DATA/`
+3. Drag `ALL.zip` (from Guide 02) into it
+
+The finished path is `MyDrive/MeshSight/DATA/ALL.zip` — which is exactly what
+the cell expects, so nothing needs editing.
 
 - [ ] `MyDrive/MeshSight/DATA/` exists
 - [ ] `ALL.zip` is inside it
 
-1. Open [drive.google.com](https://drive.google.com).
-2. Create the folder `MyDrive/MeshSight/DATA/`.
-3. Drag `ALL.zip` into it.
+## Step 2 — Paste this one cell
 
-Result: `MyDrive/MeshSight/DATA/ALL.zip` — which matches the default
-`SOURCE_ARCHIVE` in the config, so no editing needed.
+[[illustration:cells]]
 
-<details class="guide-box">
-  <summary><span class="chev">▾</span>I named my zip something else</summary>
-  <div class="details-body">
-
-Edit the first line of the config cell (step 2) to match, e.g.:
+1. Open [colab.research.google.com](https://colab.research.google.com) →
+   **New notebook**
+2. **Runtime → Change runtime type → T4 GPU** (CPU works but is slow)
+3. Click the **code** icon `+` to add a cell
+4. Copy everything below and paste it in, then press **Shift + Enter**
 
 ```python
-SOURCE_ARCHIVE = "/content/drive/MyDrive/MeshSight/DATA/my_cats.zip"
+# ═══════════════════════════════════════════════════════════════
+#  MeshSight — the entire pipeline in one cell.
+#  Edit ARCHIVE below only if your zip is named something else.
+# ═══════════════════════════════════════════════════════════════
+
+ARCHIVE = "/content/drive/MyDrive/MeshSight/DATA/ALL.zip"
+
+REPO = "/content/meshsight"
+COLAB = f"{REPO}/colab"
+
+# ── 1. fetch the pipeline ─────────────────────────────────────
+import os, sys, runpy, subprocess
+
+if not os.path.exists(REPO):
+    subprocess.run(
+        ["git", "clone", "--depth", "1",
+         "https://github.com/testplay-byte/MeshSight.git", REPO],
+        check=True,
+    )
+
+sys.path.insert(0, COLAB)
+
+# ── 2. point it at your archive ───────────────────────────────
+import config
+config.SOURCE_ARCHIVE = ARCHIVE
+
+# ── 3. run all ten stages, in order ───────────────────────────
+STAGES = [
+    "01_setup",           # install packages, print the config
+    "02_helpers",         # shared helpers
+    "03_ingest",          # unzip ALL.zip into the workspace
+    "04_process_images",  # one crop per annotated object
+    "05_features",        # DINOv2 embeddings
+    "06_reduce",          # UMAP to 2D
+    "07_cluster",         # HDBSCAN into sub-classes
+    "08_organize",        # write <Label_C1>/ folders
+    "09_visual_map",      # Visual_Map.html
+    "10_package",         # organized_dataset.zip
+]
+
+for stage in STAGES:
+    print(f"\n{'=' * 62}\n  ▶  {stage}\n{'=' * 62}", flush=True)
+    runpy.run_path(os.path.join(COLAB, f"{stage}.py"), run_name="__main__")
+
+print(f"\n{'=' * 62}\n  ✓ Done — download organized_dataset.zip below\n{'=' * 62}")
 ```
 
-Stage 01 prints the path it will use — check that table before stage 03.
+That is the whole setup. The cell clones the repo, sets your archive path, and
+runs all ten stages in order. The first run installs the heavy packages and
+takes about 5–10 minutes; later runs are faster.
 
-  </div>
-</details>
-
-## Step 2 — Open Colab and create the cells
-
-- [ ] Runtime is set to a **T4 GPU** (CPU works but is slow)
-
-1. Go to [colab.research.google.com](https://colab.research.google.com) →
-   **New notebook**.
-2. **Runtime → Change runtime type → T4 GPU** (recommended; CPU works but
-   is slow).
-3. In the Colab toolbar click the **code** icon `+` to add a code cell.
-
-Add **11 cells**, in this order:
-
-| Cell | Contents |
-|---|---|
-| 1 | the whole of [`colab/config.py`](https://github.com/testplay-byte/MeshSight/blob/main/colab/config.py) |
-| 2 | `01_setup.py` |
-| 3 | `02_helpers.py` |
-| 4 | `03_ingest.py` |
-| 5 | `04_process_images.py` |
-| 6 | `05_features.py` |
-| 7 | `06_reduce.py` |
-| 8 | `07_cluster.py` |
-| 9 | `08_organize.py` |
-| 10 | `09_visual_map.py` |
-| 11 | `10_package.py` |
+<div class="do-this"><strong>Something failed?</strong> Fix the cause and press
+<strong>Shift + Enter</strong> again on the same cell — every stage wipes its
+own output first, so re-running is always safe.</div>
 
 <details class="guide-box">
-  <summary><span class="chev">▾</span>Faster ways to get the files in</summary>
+  <summary><span class="chev">▾</span>Prefer to run one stage at a time?</summary>
   <div class="details-body">
 
-**Option 1 — clone the repo (one cell, no copying):**
+You don't need the master cell. Clone once:
 
 ```python
 !git clone --depth 1 https://github.com/testplay-byte/MeshSight.git /content/meshsight
 ```
 
-Then skip the manual copying entirely and run each stage by pasting this
-one-liner per stage (it executes the real file, so it's always the current
-version):
+Then run any stage on its own — useful when you want to change a setting in
+`colab/config.py` and redo just that part:
 
 ```python
 %run /content/meshsight/colab/01_setup.py
 ```
 
-Repeat with `02_helpers.py` … `10_package.py`, running them in order.
+| Stage | What it does | ~Time |
+|---|---|---|
+| `01_setup` | installs packages, prints your settings | 2–4 min first run |
+| `02_helpers` | shared helper functions | instant |
+| `03_ingest` | unzips `ALL.zip` into the workspace | ~10 s |
+| `04_process_images` | **one crop per annotated object** | 1–2 min |
+| `05_features` | DINOv2 embeddings | 2–4 min |
+| `06_reduce` | UMAP to 2 dimensions | ~1 min |
+| `07_cluster` | HDBSCAN → `cat_C1`, `cat_C2`, … | ~30 s |
+| `08_organize` | writes the `<Label_C1>/` folders | ~10 s |
+| `09_visual_map` | builds `Visual_Map.html` | ~10 s |
+| `10_package` | zips everything for download | instant |
 
-**Option 2 — upload the folder as a zip:**
-
-Colab's Files panel uploads **files, not folders** — selecting a folder does
-nothing useful. Zip it first, then upload the single `.zip`:
-
-```bash
-# in PowerShell, from the folder that CONTAINS colab/
-Compress-Archive -Path colab -DestinationPath colab.zip
-```
-
-Open the **Files** panel (folder icon in Colab) → **Upload** → pick
-`colab.zip` → then run this cell:
-
-```python
-!unzip -q /content/colab.zip -d /content
-```
-
-The stages land in `/content/colab/`. Run them normally — stage 01 adds that
-path to `sys.path` itself, so no extra `sys.path` line is needed.
+Settings live in `colab/config.py` — `SOURCE_ARCHIVE`, `ENABLE_CROP`,
+`PADDING_FACTOR`, `HDBSCAN_MIN_CLUSTER_SIZE` and friends. **Guide 04** explains
+which ones are worth turning.
 
   </div>
 </details>
 
-## Step 3 — Run cell 1 (config) and cell 2 (setup)
+## Step 3 — Read the output
 
-Run the config cell once — it loads silently (it's just settings).
+Each stage prints a header and a short report. These are the ones worth
+watching:
 
-Then run `01_setup.py`. It installs the packages (2–4 min the first time)
-and prints two tables:
+| Stage | Look for |
+|---|---|
+| `04_process_images` | **extracted** count and **crops written** — if crops is 0, stage 03 found no images (usually a wrapper folder in the zip) |
+| `07_cluster` | how many `C1`, `C2` sub-classes each label produced |
+| `08_organize` | the final folder list — this is your training set |
 
-- **Environment Status** — every package ✓
-- **🔧 Your configuration** — the archive path and working dirs
+If stage 04 reports **0 crops** while stage 03 reported plenty of images, the
+`.json` files aren't sitting next to their images. Go back to Guide 02, Step 6.
 
-<div class="do-this"><strong>Read that second table before continuing.</strong>
-If <code>Archive on Drive</code> doesn't match your file, fix the config
-cell and re-run. If stage 01 instead shows the red
-<em>"config not found"</em> panel, expand the fix inside it — it tells you
-exactly which of the two paths applies.
+<div class="do-this"><strong>Don't skip this:</strong> open
+<code>Visual_Map.html</code> before training (Step 4). It's a picture of what
+the clustering actually found, and it catches a bad run in seconds instead of
+after a training run.</div>
 
-  </div>
+## Step 4 — Download and look at the map
 
-## Step 4 — Run stages 02 → 10, in order
+[[illustration:map]]
 
-Press the ▷ button on each cell. Wait for each to finish before the next.
+Stage 10 finishes with **organized_dataset.zip** (if the download prompt was
+blocked, grab it from **Files 📁 → organized_dataset.zip**).
 
-Tap each one as it finishes — the checkmarks survive a refresh.
+Unzip it locally. You'll see one folder per discovered sub-class, each holding
+cropped images and their JSON, plus `Visual_Map.html`:
 
-- [ ] `02_helpers.py` — loads geometry helpers (~seconds)
-- [ ] `03_ingest.py` — mounts Drive, extracts `ALL.zip` (~1 min)
-- [ ] `04_process_images.py` — **splits every object into its own crop** (~1 min)
-- [ ] `05_features.py` — DINOv2 embeddings, needs the GPU (2–5 min)
-- [ ] `06_reduce.py` — UMAP → 2-D layout (~1 min)
-- [ ] `07_cluster.py` — sub-class clusters + outliers (~1 min)
-- [ ] `08_organize.py` — writes `<Label_C#>/` folders (~1 min)
-- [ ] `09_visual_map.py` — interactive constellation map (~2 min)
-- [ ] `10_package.py` — zips + starts the download (~1 min)
+```
+organized_dataset/
+├── cat_C1/     cat_001.jpg  cat_001.json  ...
+├── cat_C2/
+└── hand_C1/
+Visual_Map.html
+```
 
-Stage 03 will prompt you to **grant Drive access** — click *Connect* /
-*Allow*. Nothing else needs permissions.
+Open `Visual_Map.html` in a browser. Each dot is one image — position is visual
+similarity, colour is the cluster it landed in, a red pulse means outlier.
+Click any dot for details.
+
+- [ ] `Visual_Map.html` opens and the dots are **not** all one colour
+- [ ] Every class folder holds a **usable** number of crops — not 1–2, not hundreds of near-duplicates
+- [ ] Nothing is obviously mislabelled (no cat crops sitting in `hand_C1`)
+
+**Next →** [Guide 04 — Split & Cluster](04-split-and-cluster.md): understand
+what each stage produced, and what to change if it isn't right.
 
 <details class="guide-box">
-  <summary><span class="chev">▾</span>If a cell errors out</summary>
+  <summary><span class="chev">▾</span>If the cell errors out</summary>
   <div class="details-body">
 
 | Error | Fix |
 |---|---|
-| `ModuleNotFoundError: No module named 'config'` | Run the config cell (step 3) **above** stage 01, then re-run stage 01 |
-| `FileNotFoundError` at stage 03 | The archive path is wrong — check the config table stage 01 printed |
-| Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, step 8 |
-| Colab disconnected | Runtime → Run all from stage 01 again; RAM resets between runs |
-| OOM during stage 05 | Free Colab offers T4 (sometimes L4). Interrupt the runtime, re-run stage 05. If it still OOMs, cut the photo count and re-upload, or upgrade to a paid GPU. |
-
-> **Do not split the work across several zips and run stages 03–09 once per
-> zip.** Stage 03 wipes `WORKING_DIR/` and stage 08 wipes `organized_dataset/`
-> at the start of every run, so the second zip erases the first zip's crops and
-> clusters. You would train on whichever zip ran last. The pipeline is built to
-> handle a large dataset in one pass — reduce the photo count or upgrade the GPU
-> instead.
+| `ModuleNotFoundError: No module named 'config'` | Re-run the cell — it clones the repo and registers `config` on the way |
+| `FileNotFoundError` at stage 03 | The archive path is wrong. Check `MyDrive/MeshSight/DATA/ALL.zip` exists, or edit `ARCHIVE` at the top of the cell |
+| Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, Step 7 |
+| `CUDA out of memory` during stage 05 | Runtime → Restart, then re-run. If it persists, the dataset is too large for a free T4 |
+| Colab disconnected | Runtime → Run all again. RAM resets between sessions, so the cell always starts clean |
 
   </div>
 </details>
-
-[[illustration:map]]
-
-## Step 5 — Download the result
-
-Stage 10 finishes with **organized_dataset.zip** (or grab it from
-**Files 📁 → organized_dataset.zip** if the download prompt was blocked).
-
-Unzip it locally. You'll see one folder per discovered sub-class, each with
-the cropped images and their JSON, plus `Visual_Map.html` — open that in a
-browser to review your clusters before training.
-
-<div class="do-this"><strong>Look at the map before you train.</strong>
-Red pulsing dots are outliers — mislabeled or odd-angle images. Fix or drop
-those now; training on them costs accuracy later.
-
-  </div>
-
-**Next →** [Guide 04 — understand what the pipeline just produced](04-split-and-cluster.md),
-then [Guide 05 — convert it to a YOLO dataset](05-convert-dataset.md).

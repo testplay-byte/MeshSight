@@ -1,274 +1,216 @@
 ---
-title: "Annotate the Data"
+title: "Annotate"
 ---
 
 # ✏️ Guide 02 — Annotate the Data
 
-**Goal:** end this guide with a single `ALL.zip` you can drop into Colab —
-per-class folders, each photo paired with a polygon annotation file.
+**Goal:** draw a polygon around every object in every photo and end with an
+`ALL.zip` the pipeline can read.
 
-Everything here is copy-paste friendly: click **Copy** on any command block.
+Everything in this guide happens on **your own machine**. Nothing is uploaded
+until the last step.
 
-## Step 1 — Install LabelMe
+[[illustration:tool]]
 
-Open **Command Prompt** (Windows) or **Terminal** (macOS/Linux) and run:
+## Step 1 — Pick your tool
+
+Do this first — the next two steps follow whichever one you pick.
+
+<div class="tool-cards">
+  <div class="tool-card">
+    <div class="tool-name">LabelMe</div>
+    <div class="tool-line">Desktop app, install once, works offline</div>
+    <div class="tool-line">Polygon labels saved automatically</div>
+    <div class="tool-line"><strong>Start here if you have never done this.</strong></div>
+  </div>
+  <div class="tool-card">
+    <div class="tool-name">CVAT</div>
+    <div class="tool-line">Runs in the browser, nothing to install</div>
+    <div class="tool-line">Better for large batches or a team</div>
+    <div class="tool-line">Exports one XML, then converted</div>
+  </div>
+</div>
+
+Both paths end at the same place: one folder per class, each photo next to its
+own annotation file. Pick either — nothing downstream can tell the difference.
+
+## Step 2 — Install it
+
+**Using LabelMe** — one command:
 
 ```bash
 pip install labelme
 ```
 
-If `pip` isn't found, use Python's module form instead:
+If `pip` isn't found, use the module form instead:
 
 ```bash
 python -m pip install labelme
 ```
 
-<details class="guide-box">
-  <summary><span class="chev">▾</span>Getting familiar with the LabelMe window</summary>
-  <div class="details-body">
+**Using CVAT** — nothing to install. Create a free account at
+[app.cvat.ai](https://app.cvat.ai) and make a project with the same labels you
+chose in Guide 01 (`cat`, `hand`).
 
-The window has three parts worth knowing:
+<div class="do-this"><strong>macOS or Linux?</strong> Some systems need
+<code>pip3 install labelme</code> instead of <code>pip install labelme</code>.</div>
 
-- **Left toolbar** — the tools. You only need two: *Create Polygon* and
-  *Edit Polygons* (to fix a mistake).
-- **Canvas (centre)** — your image. You click along an object's outline to
-  trace it.
-- **Right panel** — *Files* (open a folder), *Flags*, *Label*, *Shapes*
-  (a list of everything you've drawn so far).
+## Step 3 — Open your photos
 
-Keyboard shortcuts that matter:
+[[illustration:launch]]
 
-| Key | Action |
-|---|---|
-| `Ctrl + U` | Open a **folder** of images |
-| `Ctrl + N` | Start a **new polygon** |
-| `Ctrl + J` | **Edit** the selected polygon |
-| **double-click** | **Close the current polygon** |
-| `Ctrl + S` | Save (writes `<image-name>.json` next to the image) |
-| `Ctrl + Z` | Undo last point / last edit |
-| `Del` | Delete the selected polygon |
-| `A` / `D` | Previous / next image |
-
-Menu equivalents: **File → Open Dir**, **File → Save**, **Help → Keyboard Shortcuts**.
-
-  </div>
-</details>
-
-## Step 2 — Launch LabelMe on your photos
-
-Point it at the working copy — `data/ANNOTATED/cat` (you'll copy your
-photos there in Step 3).
-
-**Getting the exact path on Windows:** open File Explorer, navigate to the
-`cat` folder, then **Shift + right-click the folder → Copy as path**, and
-paste it into the command:
+With **LabelMe**, type one word:
 
 ```bash
-labelme "C:\Users\you\...\data\ANNOTATED\cat"
+labelme
 ```
 
-If Windows says *'labelme' is not recognized*, the LabelMe scripts folder
-isn't on your PATH — use `python -m labelme "C:\..."` instead.
+The window opens. That is the whole command — no file arguments, no flags.
 
-<div class="do-this"><strong>Tip:</strong> keep one LabelMe window per class
-folder. LabelMe remembers the last folder, so finishing <code>cat</code> and
-then opening <code>hand</code> takes one click.</div>
+<div class="do-this"><strong>If <code>labelme</code> isn't found</strong>, run
+<code>python -m labelme</code> instead. Same app.</div>
 
-## Step 3 — Set up the working copy
+With **CVAT**, open your project and upload the photo folders from Guide 01.
 
-<div class="do-this"><strong>Never annotate over your originals.</strong>
-<code>data/photos/</code> is your master copy — copy it into a working folder and
-annotate there, so a bad first pass can never cost you the originals.</div>
+Now open your photos in whichever tool you picked:
 
-For each class folder:
+- **LabelMe** → `File → Open Dir` (or <kbd>Ctrl</kbd>+<kbd>U</kbd>) and select
+  your **working copy** folder (created in Step 4)
+- **CVAT** → upload them into the project
 
-1. Create `data/ANNOTATED/` if it doesn't exist, with one sub-folder per
-   class (`cat`, `hand`, …).
-2. Open `data/photos/cat`, press <code>Ctrl+A</code>, copy, and paste into
-   `data/ANNOTATED/cat/`. Repeat for every class.
+## Step 4 — Make a working copy first
 
-LabelMe writes each `.json` **beside** the image it describes, so images and
-annotations must live in the same folder.
-
-## Step 4 — Pick your tool: LabelMe or CVAT
-
-Both end up in the same place (LabelMe-style JSON). Choose the one you
-prefer — then follow just that path.
-
-<div class="tool-cards">
-  <div class="tool-card">
-    <span class="tool-name">LabelMe <span class="badge lime" style="font-size:9px;vertical-align:middle">recommended</span></span>
-    <span class="tool-line">Free, local, zero setup. Writes the JSON beside each image automatically. Best for a few hundred images.</span>
-    <span class="tool-line"><strong>Follow:</strong> Path A below.</span>
-  </div>
-  <div class="tool-card">
-    <span class="tool-name">CVAT</span>
-    <span class="tool-line">Browser-based, faster for bulk work, needs a server or the web app. Exports one XML you then convert.</span>
-    <span class="tool-line"><strong>Follow:</strong> Path B below.</span>
-  </div>
-</div>
-
-## Step 5 — Annotate every image
-
-<details class="guide-box">
-  <summary><span class="chev">▾</span>Path A — Annotate in LabelMe</summary>
-  <div class="details-body">
-
-For each image in the folder:
-
-1. Press `Ctrl + N` to start a polygon.
-2. Click along the object's outline — follow the real edge, corners on the
-   object (ears, paws, fingertips).
-3. **Double-click** to close the shape, then **type the class label** in the
-   dialog that appears — use
-   the exact folder name (`cat`, `hand`).
-4. Repeat for **every** object in the image. Two cats = two polygons.
-5. Press `Ctrl + S`.
-
-When you save, LabelMe writes `cat_001.json` right beside
-`cat_001.jpg`. When the folder is done, move on to the next class folder.
-
-  </div>
-</details>
-
-<details class="guide-box">
-  <summary><span class="chev">▾</span>Path B — Annotate in CVAT, then convert</summary>
-  <div class="details-body">
-
-1. Create a project, create two labels (`cat`, `hand`), upload your photos.
-2. Draw polygons exactly as in LabelMe — one polygon per object instance.
-3. When finished, export: **Menu → Export annotations → CVAT for images 1.1
-   (XML)**. You get one `export.xml`.
-4. Convert it to LabelMe JSON:
+Never annotate your originals. Copy them, annotate the copy:
 
 ```bash
-python scripts/cvat_xml_to_labelme.py "C:\Users\YOUR_NAME\Downloads\export.xml" "C:\Users\YOUR_NAME\path\data\ANNOTATED_STAGING"
-```
-
-The converter writes **one JSON per image containing every label's polygons**
-— it does not filter by class. So convert **once**, into a flat staging folder.
-Then open each `<image>.json`, look at its `label` field, and move the file into
-the matching class sub-folder next to its photo:
-
-```bash
+mkdir data\ANNOTATED
 mkdir data\ANNOTATED\cat
 mkdir data\ANNOTATED\hand
-copy data\ANNOTATED_STAGING\*.jpg  data\ANNOTATED\cat\
-copy data\ANNOTATED_STAGING\*.json data\ANNOTATED\cat\
-REMOVE from the staging folder any image you did NOT draw a polygon on
+
+copy data\photos\cat\*.*  data\ANNOTATED\cat\
+copy data\photos\hand\*.* data\ANNOTATED\hand\
 ```
-
-> Skip `data\ANNOTATED\cat\` for images that contain only a `hand`, and vice
-> versa. An image with no polygons is skipped by the pipeline — but an image
-> filed under the wrong class teaches the model the wrong thing.
-
-  </div>
-</details>
-
-<details class="guide-box">
-  <summary><span class="chev">▾</span>What makes a polygon "good"?</summary>
-  <div class="details-body">
-
-The trainer only ever sees your polygons — if they're loose, the model learns
-noise. The rules:
-
-- **Tight but complete.** Follow the real silhouette. No big air around the
-  object, no cutting into it.
-- **Corners on the object.** Ears, fingertips, toes, handlebars.
-- **One polygon per instance.** Never one blob around a group of objects.
-- **Include awkward poses.** Sideways, partially hidden, in shadow — these
-  are where models usually fail.
-- **Keep the label text identical.** `cat` everywhere, never `Cat`.
-
-  </div>
-</details>
-
-## Step 6 — Check the ANNOTATED folder
-
-Assemble this shape before zipping — the pipeline expects exactly this:
 
 ```
 data/
-└── ANNOTATED/
+├── photos/          ← master copy, never touch it again
+└── ANNOTATED/       ← you annotate in here
     ├── cat/
-    │   ├── cat_001.jpg
-    │   ├── cat_001.json
-    │   └── ...
     └── hand/
-        ├── hand_001.jpg
-        ├── hand_001.json
-        └── ...
 ```
 
-<div class="do-this"><strong>Do this now:</strong> rename your photo folders
-and their contents with the class prefix (<code>cat_001.jpg</code>). It makes
-the next stage's naming self-explanatory.</div>
+## Step 5 — Draw the polygons
 
-Check these before moving on — each one silently breaks the pipeline downstream:
+[[illustration:annotate]]
+
+One polygon per object. Two cats in one photo = two polygons.
+
+For **LabelMe**:
+
+1. Click points around the object's outline
+2. **Double-click** to close the shape, then type the class name (`cat`) and
+   press <kbd>Enter</kbd>
+3. Press <kbd>Ctrl</kbd>+<kbd>S</kbd> — it writes `cat_001.json` next to
+   `cat_001.jpg` automatically
+4. Press <kbd>A</kbd> / <kbd>D</kbd> to move to the previous / next image
+
+Shortcuts worth knowing:
+
+| Key | Action |
+|---|---|
+| <kbd>Ctrl</kbd>+<kbd>U</kbd> | Open a **folder** of images |
+| <kbd>Ctrl</kbd>+<kbd>N</kbd> | Start a **new polygon** |
+| <kbd>Ctrl</kbd>+<kbd>S</kbd> | Save (writes the `.json` beside the image) |
+| <kbd>A</kbd> / <kbd>D</kbd> | Previous / next image |
+| <kbd>Ctrl</kbd>+<kbd>Z</kbd> | Undo the last point |
+
+**Using CVAT instead:** draw polygons the same way, then export
+**Menu → Export annotations → CVAT for images 1.1 (XML)** and convert it once:
+
+```bash
+python scripts/cvat_xml_to_labelme.py "C:\path\to\export.xml" "C:\path\to\data\ANNOTATED_STAGING"
+```
+
+The converter writes **one JSON per image containing every label's polygons** —
+it does not filter by class. So convert **once** into the staging folder, then
+move each `<image>.json` into the class folder that matches its `label` field,
+alongside its photo.
+
+<div class="do-this"><strong>Good polygons are tight.</strong> Follow the real
+silhouette — no air around it, no cutting into it. Corners on ears, fingertips,
+toes. Loose polygons teach the model noise.</div>
+
+## Step 6 — Check the folder
+
+[[illustration:annotated]]
+
+Before you zip, confirm each of these. Each one silently breaks the pipeline:
 
 - [ ] Every image has a **sibling `.json`** named identically (`cat_001.jpg` ↔ `cat_001.json`)
-- [ ] **No `.jpg.json`** files — that is the single most common mistake, and stage 04 skips every such image while the status tables still look healthy
-- [ ] An image containing only a `hand` is filed under `hand/`, not `cat/`
-- [ ] Both files live in the **same** folder (the `.json` sits next to its photo)
+- [ ] **No `.jpg.json`** files — the single most common mistake; the pipeline skips those images while every status table still looks healthy
+- [ ] A photo containing only a `hand` is filed under `hand/`, not `cat/`
+- [ ] Both files sit in the **same** folder
 - [ ] Each photo appears in **exactly one** class folder — not copied into both
-- [ ] A stray wrapper folder (`ANNOTATED/cat/images/...`) is not hiding your files
+- [ ] No stray wrapper folder (`ANNOTATED/cat/images/…`) is hiding your files
 
-## Step 7 (optional) — Pre-crop locally
+<details class="guide-box">
+  <summary><span class="chev">▾</span>Optional — pre-crop on your machine</summary>
+  <div class="details-body">
 
-This runs the same "one crop per object" split that Colab will run later, so
-you can inspect the crops before uploading. It is not required.
+This runs the same one-crop-per-object split that Colab runs later, so you can
+inspect the crops before uploading. It is **not required** — skip it if you are
+in a hurry.
 
 ```bash
 python ../scripts/crop_labelme_images.py -y
 ```
 
-Run it from inside `data/`. The script locates everything **relative to its own
-location** — it looks for `ANNOTATED/` inside `scripts/` and writes crops to
-`scripts/cropped/<label>/`. If `ANNOTATED/` isn't there, copy it into `scripts/`
-first, or skip this optional step and let Colab crop in stage 04.
-
-**Your originals are kept** unless you pass `--delete-originals`.
-
-<details class="guide-box">
-  <summary><span class="chev">▾</span>What the script needs, and what it won't do</summary>
-  <div class="details-body">
-
-- Needs `rich` and `Pillow` — the script installs both itself on first run.
-  No OpenCV.
-- Only reads `<image>.png` / `.jpg` / `.jpeg` / `.webp` pairs with a matching
-  `<image>.json`, so a missing JSON means that image is skipped (it shows up
-  as "un-annotated" in the report).
-- It never touches images without polygons, even with `--delete-originals`.
+Run it from inside `data/`. It needs only `rich` and `Pillow` — it installs
+both itself — and writes crops to `scripts/cropped/<label>/`. It reads
+`.png/.jpg/.jpeg/.webp` images that have a matching `.json`, and **never** touches
+an image without polygons, even with `--delete-originals`.
 
   </div>
 </details>
 
-## Step 8 — Zip it (this part matters)
+## Step 7 — Zip the class folders
+
+[[illustration:zip]]
 
 <div class="do-this"><strong>Zip the class folders themselves — not the
-<code>ANNOTATED</code> folder, and not your original <code>photos</code>
-folder.</strong></div>
+<code>ANNOTATED</code> folder, and not your <code>photos</code> folder.</strong></div>
 
-What the archive must contain at its **root**:
+The archive must look like this when opened — no extra folder on top:
 
 ```
-ALL.zip
-├── cat/     ← cat_001.jpg + cat_001.json + …
-└── hand/    ← hand_001.jpg + hand_001.json + …
+cat/
+  cat_001.jpg
+  cat_001.json
+hand/
+  hand_001.jpg
+  hand_001.json
 ```
 
-The quickest way:
+**Windows**
 
-- **Windows** — open the `ANNOTATED` folder, click <code>cat</code> and
-  <code>hand</code> with Ctrl, right-click → *Compress to ZIP file* → name it
-  `ALL.zip`.
-- **macOS** — select `cat` and `hand` inside `ANNOTATED`, right-click →
-  *Compress*, then rename the file to `ALL.zip`.
+1. Open the `ANNOTATED` folder
+2. Click `cat`, then <kbd>Ctrl</kbd>+click `hand`
+3. Right-click → **Compress to ZIP file**
+4. Rename it to `ALL.zip`
 
-<div class="do-this"><strong>Check before you continue:</strong> unzip
-<code>ALL.zip</code> once. If you see <code>ALL/cat/…</code> (an extra
-wrapper folder), redo the zip — Colab won't find the class folders and
-stage 03 will extract nothing.</div>
+**macOS**
+
+1. Select `cat` and `hand` inside `ANNOTATED`
+2. Right-click → **Compress**
+3. Rename the result to `ALL.zip`
+
+<div class="do-this"><strong>Check before you continue:</strong> unzip `ALL.zip`
+and look. If you see <code>ALL/cat/…</code> you zipped one level too high —
+stage 03 will extract nothing. You want <code>cat/…</code> at the top.</div>
+
+- [ ] `ALL.zip` exists and unzips to `cat/` and `hand/` at the top level
+- [ ] Both folders contain `.jpg` + `.json` pairs
+- [ ] No wrapper folder inside the zip
 
 **Next →** [Guide 03 — Run the Colab pipeline](03-run-colab-pipeline.md):
-upload `ALL.zip` to Drive and watch the pipeline split and cluster everything.
+upload `ALL.zip` and run the whole thing from a single cell.

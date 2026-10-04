@@ -35,31 +35,23 @@ export default function GuideWizard({
   const router = useRouter();
   const [i, setI] = useState(0);
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const [hydrated, setHydrated] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLElement>(null);
 
-  // keep check-offs across refreshes. The load effect must finish before
-  // any save runs, or the initial `{}` overwrites the saved value.
+  // Check-offs are deliberately NOT persisted. A checklist that remembers
+  // itself is worse than useless here: the reader re-enters a step they already
+  // ticked last time and sees it pre-ticked, with no memory of doing it.
+  // They do reset per guide though — the last step routes to the next guide
+  // within the same component instance, which would otherwise carry the
+  // previous guide's ticks over.
+  const slugRef = useRef(guide.slug);
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(`ms-check:${guide.slug}`);
-      if (raw) {
-        // a stale or hand-edited value can be null, an array or a scalar —
-        // `done[c.id]` on a null throws and blanks the whole wizard.
-        const v = JSON.parse(raw);
-        if (v && typeof v === "object" && !Array.isArray(v)) setDone(v);
-      }
-    } catch {}
-    setHydrated(true);
+    if (slugRef.current !== guide.slug) {
+      slugRef.current = guide.slug;
+      setDone({});
+      setI(0);
+    }
   }, [guide.slug]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(`ms-check:${guide.slug}`, JSON.stringify(done));
-    } catch {}
-  }, [guide.slug, done, hydrated]);
 
   // The wizard is position:fixed and .wiz-body is the scroller, so the window
   // never scrolls — scrollTo on it is a no-op and the new step would open at
