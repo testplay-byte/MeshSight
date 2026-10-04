@@ -157,17 +157,31 @@ def repair_pillow(original_version: str) -> None:
             pass
 
     def _healthy() -> tuple[bool, str]:
+        """
+        Is Pillow internally consistent?
+
+        Two things to get right here, both learned the hard way:
+
+        1. Do NOT require PIL.ImageText. It only exists in some Pillow
+           releases - 11.3.0 does not have it, and neither does 12.1.1.
+           Requiring it declared a perfectly healthy Pillow broken, which
+           sent the repair into an endless loop reinstalling good versions.
+
+        2. Detect a genuine split (compiled extension built for a different
+           release than the .py files) by promoting Pillow's RuntimeWarning
+           to an error. Pillow only warns about the mismatch; it does not
+           raise, so without this a broken install passes as healthy.
+        """
         _purge_pil()
         _drop_pil_bytecode()
-        try:
-            from PIL import Image, ImageDraw, ImageFont, ImageText  # noqa: F401
-            return True, ""
-        except Exception as exc:
-            # Silence the version-mismatch RuntimeWarning spam that fires on
-            # every retry while the extension and files disagree.
-            import warnings
-            warnings.filterwarnings("ignore", message=".*_imaging extension.*")
-            return False, f"{type(exc).__name__}: {exc}"
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            try:
+                from PIL import Image, ImageDraw, ImageFont  # noqa: F401
+            except Exception as exc:
+                return False, f"{type(exc).__name__}: {exc}"
+        return True, ""
 
     ok, err = _healthy()
     if ok:
