@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { IconArrowRight } from "@/components/Icons";
+import StepIllustration from "@/components/StepIllustration";
 import { getGuides, PHASES } from "@/lib/guides";
 
 export default function Home() {
@@ -25,6 +26,10 @@ export default function Home() {
             Start the guide
             <IconArrowRight className="ic" />
           </Link>
+        </div>
+        {/* fills the dead space beside the headline on wide screens */}
+        <div className="hero-art" aria-hidden="true">
+          <StepIllustration name="colab" />
         </div>
       </section>
 
