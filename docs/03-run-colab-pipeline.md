@@ -465,10 +465,10 @@ console.print(Panel(
 
 ## Step 5 — Cell 3 · Unpack your archive
 
-Mount Drive and unpack ALL.zip
+Mount Google Drive, copy the archive locally, and extract it.
 
 ```python
-# MeshSight · Cell 3 of 10 — Mount Drive and unpack ALL.zip
+# MeshSight · Cell 3 of 10 — mount Drive and unpack the archive
 # Source: colab/03_ingest.py  (paste this whole block into a new cell)
 ##############################################################
 """
@@ -507,12 +507,37 @@ if os.path.exists(config.WORKING_DIR):
 os.makedirs(config.WORKING_DIR, exist_ok=True)
 
 # --- 3. Copy the archive locally (Drive reads are slow; VM disk is fast) ---
+#
+# The configured name is a default, not a requirement. If it isn't there but
+# the Drive folder holds exactly one archive, use that instead and say so —
+# naming it ALL.zip is a convention from Guide 02, and people rename it.
 if not os.path.exists(config.SOURCE_ARCHIVE):
-    console.print(
-        f"[red]Archive not found at: {config.SOURCE_ARCHIVE}[/red]\n"
-        "[cyan]Upload it there, or edit SOURCE_ARCHIVE in config.py.[/cyan]"
-    )
-    raise SystemExit
+    drive_dir = os.path.dirname(config.SOURCE_ARCHIVE)
+    found = []
+    if os.path.isdir(drive_dir):
+        found = sorted(
+            f for f in os.listdir(drive_dir)
+            if f.lower().endswith((".zip", ".7z"))
+        )
+    if len(found) == 1:
+        config.SOURCE_ARCHIVE = os.path.join(drive_dir, found[0])
+        console.print(
+            f"[yellow]Not at the configured name — using {found[0]} instead.[/yellow]"
+        )
+    elif len(found) > 1:
+        console.print(
+            f"[red]Several archives in {drive_dir}:[/red]\n"
+            + "\n".join(f"  • {f}" for f in found)
+            + "\n[cyan]Set SOURCE_ARCHIVE in config.py to the right one.[/cyan]"
+        )
+        raise SystemExit
+    else:
+        console.print(
+            f"[red]Archive not found at: {config.SOURCE_ARCHIVE}[/red]\n"
+            f"[cyan]Nothing ending in .zip or .7z is in {drive_dir}.[/cyan]\n"
+            "[cyan]Upload your archive there (Guide 03, Step 1), then re-run.[/cyan]"
+        )
+        raise SystemExit
 
 ext = os.path.splitext(config.SOURCE_ARCHIVE)[1]
 local_copy = os.path.join(config.WORKING_DIR, "data_archive" + ext)
