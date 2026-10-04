@@ -14,7 +14,6 @@ import os
 
 import numpy as np
 import torch
-import torchvision.transforms as T
 from PIL import Image
 from rich.console import Console
 from rich.panel import Panel
@@ -51,13 +50,31 @@ except Exception as e:
     console.print(f"[bold red]✗ Failed to load model: {e}[/bold red]")
     raise
 
-# Standard DINOv2 preprocessing: short-side resize → center crop → ImageNet norm
-transform = T.Compose([
-    T.Resize(256, interpolation=T.InterpolationMode.BICUBIC),
-    T.CenterCrop(224),
-    T.ToTensor(),
-    T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+# Standard DINOv2 preprocessing: short-side resize → center crop → ImageNet norm.
+#
+# Written with PIL + torch rather than torchvision.transforms.ToTensor on
+# purpose: in some torchvision builds ToTensor rejects a PIL image outright
+# ("Unexpected type <class 'PIL.Image.Image'>"), which silently skipped every
+# image here even though PIL and the loaded model were both healthy. This does
+# the same arithmetic with no dependency on torchvision's tensor path.
+_IMAGENET_MEAN = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+_IMAGENET_STD = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+
+
+def preprocess(img):
+    """PIL image → normalised (3, 224, 224) float tensor, the way DINOv2 expects."""
+    img = img.convert("RGB")
+    w, h = img.size
+    scale = 256 / min(w, h)
+    img = img.resize(
+        (max(1, round(w * scale)), max(1, round(h * scale))), Image.BICUBIC
+    )
+    w, h = img.size
+    left, top = (w - 224) // 2, (h - 224) // 2
+    img = img.crop((left, top, left + 224, top + 224))
+    arr = np.asarray(img, dtype=np.float32) / 255.0
+    t = torch.from_numpy(arr).permute(2, 0, 1)
+    return (t - _IMAGENET_MEAN) / _IMAGENET_STD
 
 embeddings_list = []
 valid_paths = []
@@ -68,7 +85,7 @@ for img_path in track(json_data_map.keys(), description="[magenta]🧠 Analyzing
     try:
         img = Image.open(img_path).convert("RGB")
         with torch.no_grad():
-            features = model(transform(img).unsqueeze(0).to(device))
+            features = model(preprocess(img).unsqueeze(0).to(device))
         embeddings_list.append(features.cpu().numpy().flatten())
         valid_paths.append(img_path)
     except Exception as e:
