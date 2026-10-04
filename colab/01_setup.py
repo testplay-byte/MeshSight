@@ -52,32 +52,67 @@ def repair_pillow() -> None:
     """
     A present-but-broken Pillow is worse than a missing one.
 
-    Colab ships Pillow preinstalled, and a dependency upgrading it partway can
-    leave the package mixed across two versions — `ImageText.py` from the new
-    one importing `_Ink` from a `_typing.py` that predates it. The import name
-    still resolves, so `install_package` reports "already installed" and the
-    real breakage only surfaces several stages later as
-    `ImportError: cannot import name '_Ink' from 'PIL._typing'`.
+    Colab ships Pillow preinstalled, and a package split across two versions
+    leaves `ImageText.py` from the newer one importing `_Ink` from a
+    `_typing.py` that predates it. The import *name* still resolves, so the
+    naive check reports "already installed", and the real breakage only
+    surfaces several stages later as
+    `ImportError: cannot import name '_Ink' from 'PIL._typing'` - raised from
+    inside torchvision, where it looks completely unrelated.
 
-    So verify by actually importing, and force a clean reinstall if that fails.
+    Repair by reinstalling AND evicting the stale modules.
+    `importlib.invalidate_caches()` alone is not enough: it clears the
+    finder's directory listing but leaves `sys.modules` alone, so the broken
+    `_typing` from the first failed import is handed straight back and the
+    reinstall appears to do nothing at all.
     """
-    try:
-        from PIL import Image, ImageDraw, ImageFilter, ImageText  # noqa: F401
+
+    def _purge_pil() -> None:
+        for name in [m for m in sys.modules if m == "PIL" or m.startswith("PIL.")]:
+            del sys.modules[name]
+
+    def _healthy() -> tuple[bool, str]:
+        _purge_pil()
+        try:
+            from PIL import Image, ImageDraw, ImageFont, ImageText  # noqa: F401
+            return True, ""
+        except Exception as exc:
+            return False, f"{type(exc).__name__}: {exc}"
+
+    ok, err = _healthy()
+    if ok:
         return
-    except Exception as e:
-        console.print(f"  [yellow]Pillow is installed but broken ({type(e).__name__}).[/yellow]")
-        console.print("  [yellow]Reinstalling Pillow cleanly...[/yellow]")
-    try:
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install",
-            "--upgrade", "--force-reinstall", "--no-cache-dir", "Pillow", "-q",
-        ])
+
+    console.print("  [yellow]Pillow is installed but broken.[/yellow]")
+    console.print(f"  [dim]{err}[/dim]")
+
+    # Escalating attempts. The uninstall step matters: force-reinstall can
+    # still leave files belonging to the broken version behind when pip
+    # believes the requested version is already present.
+    attempts = [
+        ["install", "--upgrade", "Pillow", "-q"],
+        ["install", "--upgrade", "--force-reinstall", "--no-cache-dir", "Pillow", "-q"],
+        ["uninstall", "-y", "Pillow", "-q"],
+        ["install", "--no-cache-dir", "Pillow", "-q"],
+    ]
+    for cmd in attempts:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", *cmd])
+        except subprocess.CalledProcessError:
+            pass
         importlib.invalidate_caches()
-        from PIL import Image, ImageDraw, ImageFilter, ImageText  # noqa: F401
-        console.print("  [green]✓ Pillow repaired.[/green]")
-    except Exception as e:
-        console.print(f"  [red]Could not repair Pillow: {e}[/red]")
-        console.print("  [red]Restart the runtime (Runtime → Restart) and re-run.[/red]")
+        ok, err = _healthy()
+        if ok:
+            label = "clean reinstall" if cmd[0] == "uninstall" else "upgrade"
+            console.print(f"  [green]Pillow repaired ({label}).[/green]")
+            return
+
+    raise RuntimeError(
+        "Pillow is broken and could not be repaired from inside this session.\n"
+        "  Restart the runtime (Runtime > Restart session) and run this cell again.\n"
+        "  A restart reloads the image's own consistent Pillow - a package split\n"
+        "  across two versions cannot be reliably fixed by a running kernel."
+    )
 
 
 console.print(Panel("[bold magenta]Stage 1: environment setup[/bold magenta]", expand=False))

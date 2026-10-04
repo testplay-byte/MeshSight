@@ -85,7 +85,18 @@ STAGES = [
 
 for stage in STAGES:
     print(f"\n{'=' * 62}\n  ▶  {stage}\n{'=' * 62}", flush=True)
-    runpy.run_path(os.path.join(COLAB, f"{stage}.py"), run_name="__main__")
+    try:
+        runpy.run_path(os.path.join(COLAB, f"{stage}.py"), run_name="__main__")
+    except Exception as e:
+        # Stop here rather than letting the next stage fail on the wreckage.
+        print(f"\n{'=' * 62}\n  ✗ Stopped at {stage}\n{'=' * 62}")
+        print(f"\n  {type(e).__name__}: {e}\n")
+        print("  This stage has to succeed before the next one can work.")
+        print("  Scroll up for its last few lines of output, then check the")
+        print("  'If the cell errors out' section in this guide.\n")
+        print("  Fix the cause and press Shift+Enter to run this cell again —")
+        print("  every stage wipes its own output first, so re-running is safe.\n")
+        raise
 
 print(f"\n{'=' * 62}\n  ✓ Done — download organized_dataset.zip below\n{'=' * 62}")
 ```
@@ -194,8 +205,9 @@ what each stage produced, and what to change if it isn't right.
 | `ModuleNotFoundError: No module named 'config'` | Re-run the cell — it clones the repo and registers `config` on the way |
 | `FileNotFoundError` at stage 03 | The archive path is wrong. Check `MyDrive/MeshSight/DATA/ALL.zip` exists, or edit `ARCHIVE` at the top of the cell |
 | Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, Step 7 |
-| `ImportError: cannot import name '_Ink' from 'PIL._typing'` | Colab's preinstalled Pillow is half-upgraded and internally inconsistent. Stage 01 now detects this and reinstalls Pillow for you — just re-run the cell. If it persists: **Runtime → Restart**, then run the cell again |
-| `name '...' is not defined` at stage 04 | You have a stale clone of the pipeline. The cell skips `git clone` when `/content/meshsight` already exists, so delete that folder in the Files panel and re-run — or use **Runtime → Restart all** |
+| `ImportError: cannot import name '_Ink' from 'PIL._typing'` | Pillow is split across two versions. **Runtime → Restart session** first, then re-run the cell — a restart is the reliable fix, because a package half-upgraded on disk can't be fully repaired from inside a running kernel. Stage 01 checks for this and reinstalls Pillow itself, but the restart is still the first thing to try |
+| `Stopped at 01_setup` + *Pillow is broken* | Same cause as above. The cell stops here on purpose rather than failing later inside torchvision. Restart the runtime and run it again |
+| `Cannot import name 'parse_polygon_points'` or any other `name '...' is not defined` | You're on a stale clone of the pipeline. The cell now runs `git pull` when `/content/meshsight` already exists, so just re-running updates it. If it persists, delete `/content/meshsight` in the Files panel and re-run |
 | Stage 04 reports **0 crops** but 03 found images | Every image errored. Scroll up for the first `Error processing …` line — it names the cause. The usual one is `.jpg.json` files, meaning the `.json` isn't matching its image |
 | `CUDA out of memory` during stage 05 | Runtime → Restart, then re-run. If it persists, the dataset is too large for a free T4 |
 | Colab disconnected | Runtime → Run all again. RAM resets between sessions, so the cell always starts clean |
