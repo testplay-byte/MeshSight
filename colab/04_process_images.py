@@ -23,10 +23,16 @@ from rich.table import Table
 
 import config
 
-# NOTE: `num_to_word` and `parse_polygon_points` come from 02_helpers.py.
-# In Colab all stages run in one notebook kernel, so its functions and
-# variables (json_data_map, etc.) are shared between cells by design —
-# always run the stages in order without restarting.
+# Imported explicitly rather than relying on 02_helpers.py having run first:
+# every stage executes with its own globals, so a name left behind by another
+# stage is simply not there. That mistake silently skipped all 76 images.
+import sys
+
+_HERE = str(Path(__file__).resolve().parent)
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
+from ms_helpers import num_to_word, parse_polygon_points  # noqa: E402
 
 console = Console()
 

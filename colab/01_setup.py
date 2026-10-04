@@ -32,7 +32,6 @@ PACKAGES = {
     "sklearn": "scikit-learn",
     "rich": "rich",
     "PIL": "Pillow",
-    "fiftyone": "fiftyone",
 }
 
 
@@ -49,10 +48,44 @@ def install_package(import_name: str, pip_name: str) -> None:
         console.print(f"  [red]Error installing {pip_name}: {e}[/red]")
 
 
+def repair_pillow() -> None:
+    """
+    A present-but-broken Pillow is worse than a missing one.
+
+    Colab ships Pillow preinstalled, and a dependency upgrading it partway can
+    leave the package mixed across two versions — `ImageText.py` from the new
+    one importing `_Ink` from a `_typing.py` that predates it. The import name
+    still resolves, so `install_package` reports "already installed" and the
+    real breakage only surfaces several stages later as
+    `ImportError: cannot import name '_Ink' from 'PIL._typing'`.
+
+    So verify by actually importing, and force a clean reinstall if that fails.
+    """
+    try:
+        from PIL import Image, ImageDraw, ImageFilter, ImageText  # noqa: F401
+        return
+    except Exception as e:
+        console.print(f"  [yellow]Pillow is installed but broken ({type(e).__name__}).[/yellow]")
+        console.print("  [yellow]Reinstalling Pillow cleanly...[/yellow]")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install",
+            "--upgrade", "--force-reinstall", "--no-cache-dir", "Pillow", "-q",
+        ])
+        importlib.invalidate_caches()
+        from PIL import Image, ImageDraw, ImageFilter, ImageText  # noqa: F401
+        console.print("  [green]✓ Pillow repaired.[/green]")
+    except Exception as e:
+        console.print(f"  [red]Could not repair Pillow: {e}[/red]")
+        console.print("  [red]Restart the runtime (Runtime → Restart) and re-run.[/red]")
+
+
 console.print(Panel("[bold magenta]Stage 1: environment setup[/bold magenta]", expand=False))
 
 for pkg, pip in PACKAGES.items():
     install_package(pkg, pip)
+
+repair_pillow()
 
 # ── 2. Config check ────────────────────────────────────────────────
 import os

@@ -50,9 +50,13 @@ REPO = "/content/meshsight"
 COLAB = f"{REPO}/colab"
 
 # ── 1. fetch the pipeline ─────────────────────────────────────
+# Re-clone on a fresh session; on a re-run, update in place so a
+# previously-cloned copy never leaves you on an old version.
 import os, sys, runpy, subprocess
 
-if not os.path.exists(REPO):
+if os.path.exists(f"{REPO}/.git"):
+    subprocess.run(["git", "-C", REPO, "pull", "--ff-only", "-q"], check=False)
+else:
     subprocess.run(
         ["git", "clone", "--depth", "1",
          "https://github.com/testplay-byte/MeshSight.git", REPO],
@@ -190,8 +194,16 @@ what each stage produced, and what to change if it isn't right.
 | `ModuleNotFoundError: No module named 'config'` | Re-run the cell — it clones the repo and registers `config` on the way |
 | `FileNotFoundError` at stage 03 | The archive path is wrong. Check `MyDrive/MeshSight/DATA/ALL.zip` exists, or edit `ARCHIVE` at the top of the cell |
 | Extract produced 0 images | Your zip has a wrapper folder — re-zip per Guide 02, Step 7 |
+| `ImportError: cannot import name '_Ink' from 'PIL._typing'` | Colab's preinstalled Pillow is half-upgraded and internally inconsistent. Stage 01 now detects this and reinstalls Pillow for you — just re-run the cell. If it persists: **Runtime → Restart**, then run the cell again |
+| `name '...' is not defined` at stage 04 | You have a stale clone of the pipeline. The cell skips `git clone` when `/content/meshsight` already exists, so delete that folder in the Files panel and re-run — or use **Runtime → Restart all** |
+| Stage 04 reports **0 crops** but 03 found images | Every image errored. Scroll up for the first `Error processing …` line — it names the cause. The usual one is `.jpg.json` files, meaning the `.json` isn't matching its image |
 | `CUDA out of memory` during stage 05 | Runtime → Restart, then re-run. If it persists, the dataset is too large for a free T4 |
 | Colab disconnected | Runtime → Run all again. RAM resets between sessions, so the cell always starts clean |
+
+<div class="do-this"><strong>Every stage is independent.</strong> The cell runs
+each stage with <code>runpy</code>, so no stage can rely on another having run
+first — each imports what it needs. That means re-running one stage on its own
+is always safe, and a failure never leaves the next one half-wired.</div>
 
   </div>
 </details>
