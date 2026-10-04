@@ -14,6 +14,8 @@ to know *why* the output looks the way it does.
 
 ## Idea 1 — Split every object into its own image
 
+[[illustration:split]]
+
 A photo containing a cat and two dogs is **one** image but **three** objects.
 Training on whole photos teaches the model nothing about *your* specific
 objects — backgrounds, lighting and composition swamp the signal.
@@ -34,6 +36,8 @@ still carries its own perfect LabelMe JSON. One input image → N single-object
 samples.
 
 ## Idea 2 — Split classes into visual variants
+
+[[illustration:cluster]]
 
 Your class `cat` is secretly `siamese`, `tabby`, `black cat` — three
 distribution-ly different looks. A model trained on one fat "cat" class has

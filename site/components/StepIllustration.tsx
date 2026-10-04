@@ -1208,6 +1208,445 @@ function loadmodel() {
   );
 }
 
+/* split: one photo of two objects becomes two cropped images */
+function split() {
+  const CAT =
+    "M-36 43c-10-16-6-42 14-54 6-16 16-22 22-22s16 6 22 22c20 12 24 38 14 54-12 10-60 10-72 0Z";
+  const EARS = "M-20-21-26-43l20 13M20-21l6-22-20 13";
+  const HAND =
+    "M-30 6c-5-18 3-28 14-28h32c11 0 19 10 14 28-4 13-9 22-30 22s-26-9-30-22ZM-14-22v-16M-4-22v-19M7-22v-19M18-22v-15M-29 2l-15-9";
+  return (
+    <Frame label="One photo of two objects becoming two separate cropped images">
+      <rect x="30" y="52" width="200" height="168" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <g transform="translate(92 116) scale(0.64)">
+        <path d={CAT} stroke={S.lime} strokeWidth={2.5 / 0.64} fill={S.fill} />
+        <path d={EARS} stroke={S.lime} strokeWidth={2.5 / 0.64} />
+      </g>
+      <g transform="translate(180 158) scale(0.62)">
+        <path d={HAND} stroke={S.lime} strokeWidth={2.5 / 0.62} fill={S.fill} />
+      </g>
+      <Arrow x={246} y={136} />
+      <rect x="318" y="62" width="96" height="96" rx="12" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <g transform="translate(366 110) scale(0.8)">
+        <path d={CAT} stroke={S.sky} strokeWidth={2.5 / 0.8} fill={S.fill2} />
+        <path d={EARS} stroke={S.sky} strokeWidth={2.5 / 0.8} />
+      </g>
+      <rect x="428" y="62" width="96" height="96" rx="12" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <g transform="translate(482 116) scale(0.78)">
+        <path d={HAND} stroke={S.sky} strokeWidth={2.5 / 0.78} fill={S.fill2} />
+      </g>
+      <text x="130" y="246" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        one photo
+      </text>
+      <text
+        x="366"
+        y="190"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat
+      </text>
+      <text
+        x="476"
+        y="190"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        hand
+      </text>
+      <text x="421" y="246" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        one object each
+      </text>
+    </Frame>
+  );
+}
+
+/* cluster: crops of one label regrouped into visual variants plus one outlier */
+function cluster() {
+  const loose: [number, number][] = [
+    [44, 62],
+    [80, 52],
+    [116, 74],
+    [40, 102],
+    [78, 92],
+    [118, 106],
+    [56, 138],
+    [96, 130],
+    [130, 144],
+  ];
+  const c1: [number, number][] = [
+    [280, 78],
+    [318, 70],
+    [350, 88],
+    [298, 112],
+  ];
+  const c2: [number, number][] = [
+    [412, 74],
+    [450, 84],
+    [412, 112],
+    [452, 118],
+  ];
+  return (
+    <Frame label="Crops of one label grouped into visual variant clusters with one outlier">
+      {loose.map(([x, y], i) => (
+        <rect key={i} x={x} y={y} width="16" height="16" rx="4" stroke={S.soft} strokeWidth="2" fill="none" />
+      ))}
+      <text x="88" y="198" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        same label
+      </text>
+      <Arrow x={182} y={108} />
+      <rect
+        x="258"
+        y="58"
+        width="120"
+        height="92"
+        rx="14"
+        stroke={S.lime}
+        strokeWidth="1.5"
+        strokeDasharray="5 7"
+        fill={S.fill}
+      />
+      {c1.map(([x, y], i) => (
+        <rect key={i} x={x} y={y} width="16" height="16" rx="4" fill={S.lime} stroke="none" />
+      ))}
+      <rect
+        x="390"
+        y="58"
+        width="120"
+        height="92"
+        rx="14"
+        stroke={S.sky}
+        strokeWidth="1.5"
+        strokeDasharray="5 7"
+        fill={S.fill2}
+      />
+      {c2.map(([x, y], i) => (
+        <rect key={i} x={x} y={y} width="16" height="16" rx="4" fill={S.sky} stroke="none" />
+      ))}
+      <text
+        x="318"
+        y="180"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat_C1
+      </text>
+      <text
+        x="450"
+        y="180"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat_C2
+      </text>
+      <circle cx="504" cy="210" r="19" stroke={S.coral} strokeWidth="1.5" strokeDasharray="4 6" fill="none" />
+      <rect x="495" y="201" width="18" height="18" rx="4" fill={S.coral} stroke="none" />
+      <text x="504" y="250" textAnchor="middle" fill={S.coral} fontSize="15" fontFamily="ui-monospace, monospace">
+        outlier
+      </text>
+    </Frame>
+  );
+}
+
+/* convertflow: the converter script turning organized_dataset into yolo_dataset */
+function convertflow() {
+  const src: [string, string][] = [
+    [".jpg", S.lime],
+    [".json", S.sky],
+  ];
+  const dst: [string, string][] = [
+    ["images/", S.sky],
+    ["labels/", S.lime],
+  ];
+  return (
+    <Frame label="The organized dataset folders passing through the converter into a YOLO dataset">
+      <path
+        d="M28 76h40l14 16h92a8 8 0 0 1 8 8v92a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8V84a8 8 0 0 1 8-8Z"
+        stroke={S.lime}
+        strokeWidth="2.5"
+        fill={S.fill}
+      />
+      {src.map(([t, c], i) => (
+        <g key={t}>
+          <rect x={32 + i * 76} y={114 + i * 40} width="64" height="32" rx="8" stroke={c} strokeWidth="2" />
+          <text
+            x={64 + i * 76}
+            y={134 + i * 40}
+            textAnchor="middle"
+            fill={c}
+            fontSize="15"
+            fontFamily="ui-monospace, monospace"
+          >
+            {t}
+          </text>
+        </g>
+      ))}
+      <Arrow x={191} y={138} />
+      <rect x="256" y="76" width="92" height="124" rx="14" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <path d="M290 122l24 16-24 16Z" fill={S.sky} stroke="none" />
+      <Arrow x={357} y={138} />
+      <path
+        d="M430 76h34l12 16h56a8 8 0 0 1 8 8v92a8 8 0 0 1-8 8h-102a8 8 0 0 1-8-8V84a8 8 0 0 1 8-8Z"
+        stroke={S.sky}
+        strokeWidth="2.5"
+        fill={S.fill2}
+      />
+      {dst.map(([t, c], i) => (
+        <g key={t}>
+          <rect x="438" y={114 + i * 40} width="86" height="32" rx="8" stroke={c} strokeWidth="2" />
+          <text
+            x="481"
+            y={134 + i * 40}
+            textAnchor="middle"
+            fill={c}
+            fontSize="15"
+            fontFamily="ui-monospace, monospace"
+          >
+            {t}
+          </text>
+        </g>
+      ))}
+      <text
+        x="101"
+        y="228"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        organized_dataset
+      </text>
+      <text
+        x="302"
+        y="228"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        convert.py
+      </text>
+      <text
+        x="481"
+        y="228"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        yolo_dataset
+      </text>
+    </Frame>
+  );
+}
+
+/* sanity: counting files against labels before training, one mismatch flagged */
+function sanity() {
+  const rows: [number, string, string, boolean][] = [
+    [114, "images/train", "184", false],
+    [148, "labels/train", "183", true],
+    [182, "images/val", "21", false],
+    [216, "labels/val", "21", false],
+  ];
+  return (
+    <Frame label="Checking the image and label counts before training with one mismatch flagged">
+      <rect x="30" y="52" width="270" height="176" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <text x="50" y="80" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        yolo_dataset/
+      </text>
+      <path d="M42 92h246" stroke={S.dim} strokeWidth="1.5" />
+      <rect x="42" y="132" width="248" height="28" rx="8" stroke={S.coral} strokeWidth="2" opacity="0.75" />
+      {rows.map(([y, name, count, bad]) => (
+        <g key={name}>
+          <text x="50" y={y} fill={bad ? S.coral : S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+            {name}
+          </text>
+          <text
+            x="278"
+            y={y}
+            textAnchor="end"
+            fill={bad ? S.coral : S.lime}
+            fontSize="15"
+            fontWeight="600"
+            fontFamily="ui-monospace, monospace"
+          >
+            {count}
+          </text>
+        </g>
+      ))}
+      <Arrow x={308} y={140} />
+      <circle cx="430" cy="132" r="56" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <path d="M470 172l30 30" stroke={S.sky} strokeWidth="2.5" />
+      <circle cx="430" cy="100" r="14" fill={S.coral} stroke="none" />
+      <path d="M430 93v9" stroke="#0d1512" strokeWidth="2.5" />
+      <circle cx="430" cy="107" r="2" fill="#0d1512" stroke="none" />
+      <text
+        x="430"
+        y="146"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="20"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        184
+      </text>
+      <text
+        x="430"
+        y="176"
+        textAnchor="middle"
+        fill={S.coral}
+        fontSize="20"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        183
+      </text>
+      <text x="430" y="246" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        1 file missing
+      </text>
+    </Frame>
+  );
+}
+
+/* notebook: a Colab notebook with the T4 GPU runtime selected */
+function notebook() {
+  const runtimes: [number, number, string, boolean][] = [
+    [52, 66, "None", false],
+    [128, 120, "T4 GPU", true],
+    [258, 64, "TPU", false],
+  ];
+  return (
+    <Frame label="A Colab notebook with the T4 GPU runtime selected in the runtime picker">
+      <rect x="30" y="46" width="310" height="188" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M30 76h310" stroke={S.dim} strokeWidth="1.5" />
+      <circle cx="52" cy="61" r="4" fill={S.dim} stroke="none" />
+      <circle cx="68" cy="61" r="4" fill={S.dim} stroke="none" />
+      <circle cx="84" cy="61" r="4" fill={S.dim} stroke="none" />
+      <text x="104" y="66" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        notebook.ipynb
+      </text>
+      <text x="52" y="104" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        Runtime
+      </text>
+      {runtimes.map(([x, w, name, on]) => (
+        <g key={name}>
+          <rect
+            x={x}
+            y="118"
+            width={w}
+            height="36"
+            rx="10"
+            stroke={on ? S.lime : S.dim}
+            strokeWidth="2.5"
+            fill={on ? S.lime : "none"}
+          />
+          {on && (
+            <g>
+              <circle cx={x + 22} cy="136" r="11" fill="#0d1512" stroke="none" />
+              <path d={`M${x + 17.5} 136l3 3 6-7`} stroke={S.lime} strokeWidth="2.5" />
+            </g>
+          )}
+          <text
+            x={x + w / 2 + (on ? 20 : 0)}
+            y="142"
+            textAnchor="middle"
+            fill={on ? "#0d1512" : S.soft}
+            fontSize="15"
+            fontWeight={on ? 700 : 400}
+            fontFamily="ui-monospace, monospace"
+          >
+            {name}
+          </text>
+        </g>
+      ))}
+      <rect x="52" y="176" width="246" height="44" rx="10" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M74 198h100" stroke={S.soft} strokeWidth="2.5" opacity="0.6" />
+      <path d="M266 186l16 11-16 11Z" fill={S.soft} stroke="none" />
+      <Arrow x={356} y={140} />
+      <path
+        d="M442 92v10M474 92v10M506 92v10M442 164v10M474 164v10M506 164v10M422 112h10M422 144h10M516 112h10M516 144h10"
+        stroke={S.lime}
+        strokeWidth="2"
+      />
+      <rect x="430" y="100" width="88" height="64" rx="12" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <text
+        x="474"
+        y="140"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="20"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        T4
+      </text>
+      <text x="474" y="200" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        GPU ready
+      </text>
+    </Frame>
+  );
+}
+
+/* apk: CI builds the APK, the download lands on the phone */
+function apk() {
+  return (
+    <Frame label="CI building an APK that is downloaded and installed on the phone">
+      <rect x="26" y="56" width="196" height="168" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <text x="46" y="86" fill={S.soft} fontSize="15" fontWeight="600" fontFamily="ui-monospace, monospace">
+        CI build
+      </text>
+      <path d="M38 100h172" stroke={S.dim} strokeWidth="1.5" />
+      <path d="M46 122h118M46 144h86M46 166h120" stroke={S.soft} strokeWidth="2.5" opacity="0.45" />
+      <circle cx="204" cy="166" r="9" fill={S.lime} stroke="none" />
+      <path d="M199.5 166l3 3 6-7" stroke="#0d1512" strokeWidth="2.5" />
+      <text x="124" y="252" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        built for you
+      </text>
+      <Arrow x={238} y={140} />
+      <rect x="310" y="112" width="116" height="56" rx="14" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <path d="M330 128v22m-9-9 9 9 9-9" stroke={S.soft} strokeWidth="2.5" />
+      <text
+        x="392"
+        y="144"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="20"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        .apk
+      </text>
+      <text x="368" y="194" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        latest build
+      </text>
+      <rect x="440" y="40" width="86" height="200" rx="18" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M470 56h26" stroke={S.dim} strokeWidth="2.5" />
+      <rect x="452" y="92" width="62" height="62" rx="14" fill={S.lime} stroke="none" />
+      <path d="M470 124l11 11 20-24" stroke="#0d1512" strokeWidth="3" />
+      <path d="M458 176h50M458 192h32" stroke={S.dim} strokeWidth="2.5" />
+      <text x="483" y="254" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        install
+      </text>
+    </Frame>
+  );
+}
+
 /** Registry - referenced by [[illustration:name]] markers in the guides. */
 const REGISTRY: Record<string, () => React.ReactNode> = {
   collect,
@@ -1225,15 +1664,21 @@ const REGISTRY: Record<string, () => React.ReactNode> = {
   stages,
   colab,
   "split-cluster": splitCluster,
+  split,
+  cluster,
   knobs,
   map,
   convert,
+  convertflow,
   dataset,
+  sanity,
   train,
+  notebook,
   epochs,
   export: exportScene,
   app,
   loadmodel,
+  apk,
 };
 
 export function getIllustration(name: string): React.ReactNode | null {

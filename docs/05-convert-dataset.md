@@ -35,6 +35,8 @@ the converter.
 
 ## Step 2 — Run the converter
 
+[[illustration:convertflow]]
+
 Run it from the repo root (or point at the script by full path):
 
 ```bash
@@ -89,6 +91,8 @@ Notes:
   Guide 06 sets `/content` as the working directory for exactly this reason.
 
 ## Step 4 — Sanity check (2 minutes, prevents hours of bad training)
+
+[[illustration:sanity]]
 
 Windows PowerShell:
 

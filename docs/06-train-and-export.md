@@ -18,6 +18,8 @@ a known TODO, see CONTRIBUTING.md.)
 
 ## Step 1 — New Colab notebook, GPU runtime
 
+[[illustration:notebook]]
+
 **Runtime → Change runtime type → T4 GPU.** Upload `data.zip` to your Drive
 (e.g. `MyDrive/MeshSight/DATA/data.zip`) — same Drive layout as Guide 03.
 

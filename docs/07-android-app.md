@@ -14,6 +14,8 @@ your machine).
 
 ## Step 1 — Get the APK
 
+[[illustration:apk]]
+
 The app is never compiled locally in this project; CI does it:
 
 1. Every push to `main` that touches `android/` triggers **"Android CI"**,
