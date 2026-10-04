@@ -153,6 +153,45 @@ def repair_pillow(original_version: str) -> None:
     console.print(f"  [dim]Reinstalling Pillow=={target}...[/dim]")
 
     pin = f"Pillow=={target}" if target else "Pillow"
+
+    # Diagnostics first. A silent failure is what has cost the most time
+    # here: knowing which directory Python actually loads PIL from shows
+    # whether pip's install was shadowed by a second copy on sys.path.
+    try:
+        import importlib.util as _iu
+        from pathlib import Path as _Path
+        _s = _iu.find_spec("PIL")
+        if _s and _s.origin:
+            console.print(f"  [dim]PIL currently loads from: {_Path(_s.origin).parent}[/dim]")
+        console.print(
+            f"  [dim]metadata version: {original_version or '?'} | extension core: {target}[/dim]"
+        )
+    except Exception:
+        pass
+
+    # Strategy 1 — install into a directory we control and put it FIRST on
+    # sys.path. Colab can carry a second PIL copy that shadows whatever pip
+    # writes, which is how an in-place reinstall reports success and changes
+    # nothing. A private directory wins the import outright.
+    private = "/content/pil_fix"
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--no-cache-dir", "--no-deps",
+             "--upgrade", "--target", private, pin, "-q"],
+            capture_output=True, text=True,
+        )
+        if private not in sys.path:
+            sys.path.insert(0, private)
+        importlib.invalidate_caches()
+        ok, err = _healthy()
+        if ok:
+            console.print(f"  [green]✓ Pillow repaired (private copy of {pin}).[/green]")
+            return
+        console.print(f"  [dim]private install did not take: {err}[/dim]")
+    except Exception as exc:
+        console.print(f"  [dim]private install errored: {exc}[/dim]")
+
+    # Strategy 2 — repair the install in place, escalating if needed.
     attempts = [
         ["install", "--no-cache-dir", "--force-reinstall", pin, "-q"],
         # The uninstall pass matters: if pip's metadata already claims the
@@ -181,9 +220,10 @@ def repair_pillow(original_version: str) -> None:
 
     raise RuntimeError(
         "Pillow is broken and could not be repaired from inside this session.\n"
-        "  Fix: Runtime > Restart session, then run this cell again.\n"
-        f"  On the fresh run this stage will restore Pillow {original_version or '(the image default)'}\n"
-        "  before anything else can upgrade it out from under the kernel."
+        "  The lines above show which version was installed and which directory\n"
+        "  Python loads PIL from - please paste them back so this can be fixed.\n"
+        "  Interim: Runtime > Disconnect and delete runtime (a plain Restart keeps\n"
+        "  the disk, and the mismatched files live on the disk), then re-run."
     )
 
 
