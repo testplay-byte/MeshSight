@@ -749,7 +749,10 @@ console.print(table)
 
 console.print(Panel(
     "[bold green]✅ Data ingestion complete![/bold green]\n\n"
-    "[bold magenta]Next step: run 05_features.py to extract DINOv2 embeddings.[/bold magenta]",
+    f"[cyan]{stats['processed']} crop(s) written to {config.CLEAN_DIR}[/cyan]\n\n"
+    "[bold magenta]Next step: run 05_features.py to extract DINOv2 embeddings.[/bold magenta]\n"
+    "[dim]Cells 5-8 read this cell's results from memory, so don't restart the"
+    " runtime between them.[/dim]",
     border_style="green",
     expand=False,
 ))
