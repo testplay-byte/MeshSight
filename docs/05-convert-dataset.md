@@ -61,6 +61,8 @@ is your ground truth** for Guide 06.
 
 ## Step 3 — What it produces
 
+[[illustration:dataset]]
+
 ```
 organized_dataset/
 ├── cat_C1/  hand_C2/  ...      # one folder per sub-class (jpg + json)

@@ -54,6 +54,8 @@ Requires **Android 12 or newer** (`minSdk 31`; built against and targeting API 3
 
 ## Step 2 — Load your model
 
+[[illustration:loadmodel]]
+
 - **Settings (⚙ bottom-right) → Swap Active Model** → pick your
   `.tflite` (from Guide 06). It's copied into app storage and **auto-loads on
   every future launch**.

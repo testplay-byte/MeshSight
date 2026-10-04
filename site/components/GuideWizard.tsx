@@ -166,115 +166,137 @@ export default function GuideWizard({
         </div>
       </header>
 
-      {/* step body */}
-      <main id="main" className="wiz-body" ref={bodyRef}>
-        <div className="wiz-step">
-          {numberedTotal > 0 && (
-            <p className="label-micro-bold" style={{ marginBottom: 10 }} aria-live="polite">
-              {step.numbered ? `Step ${step.n} of ${numberedTotal}` : "Reference"}
-            </p>
-          )}
-          <h1 ref={headingRef} tabIndex={-1} className="display-h2">
-            {step.title}
-          </h1>
-          {/* the step position, announced when focus moves to the heading */}
-          <p className="sr-only" role="status">
-            Step {i + 1} of {guide.steps.length}
-            {numberedTotal > 0 && step.numbered
-              ? `, step ${step.n} of ${numberedTotal}`
-              : ""}
-          </p>
+      <div className="wiz-shell">
+        {/* step rail — desktop only; gives orientation across the whole
+            guide and lets the reader jump back to any step */}
+        <nav className="wiz-rail" aria-label="Steps in this guide">
+          <p className="label-micro-bold wiz-rail-title">In this guide</p>
+          <ol className="wiz-rail-list">
+            {guide.steps.map((s, idx) => (
+              <li key={idx}>
+                <button
+                  type="button"
+                  className={`wiz-rail-row${idx < i ? " done" : ""}`}
+                  aria-current={idx === i ? "step" : undefined}
+                  onClick={() => setI(idx)}
+                >
+                  <span className="wiz-rail-n">{String(idx + 1).padStart(2, "0")}</span>
+                  <span className="wiz-rail-t">{s.title}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-          {/* the guide's framing text (goal + any critical callout) */}
-          {i === 0 && guide.intro && (
-            <div className="md" style={{ marginBottom: 20 }}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
-                components={mdComponents}
-              >
-                {guide.intro}
-              </ReactMarkdown>
+        {/* step body — the one scroller at every breakpoint */}
+        <main id="main" className="wiz-body" ref={bodyRef}>
+          <div className="wiz-step">
+            <div className="wiz-step-head">
+              {numberedTotal > 0 && (
+                <p className="label-micro-bold" style={{ marginBottom: 10 }} aria-live="polite">
+                  {step.numbered ? `Step ${step.n} of ${numberedTotal}` : "Reference"}
+                </p>
+              )}
+              <h1 ref={headingRef} tabIndex={-1} className="display-h2">
+                {step.title}
+              </h1>
             </div>
-          )}
 
-          {step.illustration && (
-            <div className="wiz-illo">
-              <StepIllustration name={step.illustration} />
-            </div>
-          )}
-
-          {step.checklist.length > 0 && (
-            <ul className="wiz-check">
-              {step.checklist.map((c) => {
-                const on = !!done[c.id];
-                return (
-                  <li key={c.id}>
-                    <button
-                      className={`wiz-check-row${on ? " on" : ""}`}
-                      onClick={() => setDone((d) => ({ ...d, [c.id]: !d[c.id] }))}
-                      role="checkbox"
-                      aria-checked={on}
-                    >
-                      <span className="wiz-box">
-                        {on && <IconCheck className="ic xs" />}
-                      </span>
-                      <span>{c.text}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          <div className="md">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw]}
-              components={mdComponents}
-            >
-              {step.body}
-            </ReactMarkdown>
-          </div>
-
-          {/* inline navigation — scrolls with the content, no bottom bar */}
-          <nav className="wiz-nav">
-            {i > 0 ? (
-              <button className="btn-ghost" onClick={() => setI(i - 1)}>
-                <IconArrowLeft className="ic s" />
-                Back
-              </button>
-            ) : (
-              <span />
+            {step.illustration && (
+              <div className="wiz-illo">
+                <StepIllustration name={step.illustration} />
+              </div>
             )}
 
-            {isLast ? (
-              nextGuide ? (
-                <button
-                  className="btn-primary"
-                  onClick={() => router.push(`/guides/${nextGuide.slug}`)}
+            <div className="wiz-prose">
+              {/* the guide's framing text (goal + any critical callout) */}
+              {i === 0 && guide.intro && (
+                <div className="md" style={{ marginBottom: 20 }}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={mdComponents}
+                  >
+                    {guide.intro}
+                  </ReactMarkdown>
+                </div>
+              )}
+
+              {step.checklist.length > 0 && (
+                <ul className="wiz-check">
+                  {step.checklist.map((c) => {
+                    const on = !!done[c.id];
+                    return (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          className={`wiz-check-row${on ? " on" : ""}`}
+                          onClick={() => setDone((d) => ({ ...d, [c.id]: !d[c.id] }))}
+                          role="checkbox"
+                          aria-checked={on}
+                        >
+                          <span className="wiz-box">
+                            {on && <IconCheck className="ic xs" />}
+                          </span>
+                          <span>{c.text}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <div className="md">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
+                  components={mdComponents}
                 >
-                  Start {nextGuide.short}
-                  <IconArrowRight className="ic s" />
+                  {step.body}
+                </ReactMarkdown>
+              </div>
+            </div>
+
+            {/* inline navigation — scrolls with the content, no bottom bar */}
+            <nav className="wiz-nav">
+              {i > 0 ? (
+                <button type="button" className="btn-ghost" onClick={() => setI(i - 1)}>
+                  <IconArrowLeft className="ic s" />
+                  Back
                 </button>
               ) : (
-                <a
-                  className="btn-primary"
-                  href="https://github.com/testplay-byte/MeshSight/releases"
-                >
-                  Download the APK
+                <span />
+              )}
+
+              {isLast ? (
+                nextGuide ? (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => router.push(`/guides/${nextGuide.slug}`)}
+                  >
+                    Start {nextGuide.short}
+                    <IconArrowRight className="ic s" />
+                  </button>
+                ) : (
+                  <a
+                    className="btn-primary"
+                    href="https://github.com/testplay-byte/MeshSight/releases"
+                  >
+                    Download the APK
+                    <IconArrowRight className="ic s" />
+                  </a>
+                )
+              ) : (
+                <button type="button" className="btn-primary" onClick={() => setI(i + 1)}>
+                  Next step
                   <IconArrowRight className="ic s" />
-                </a>
-              )
-            ) : (
-              <button className="btn-primary" onClick={() => setI(i + 1)}>
-                Next step
-                <IconArrowRight className="ic s" />
-              </button>
-            )}
-          </nav>
-        </div>
-      </main>
+                </button>
+              )}
+            </nav>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

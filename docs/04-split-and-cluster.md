@@ -92,6 +92,8 @@ faster and recognizes your objects, not your average stock photo.
 
 ## Knobs that matter (in `colab/config.py`)
 
+[[illustration:knobs]]
+
 | Setting | Default | Raise it if… | Lower it if… |
 |---|---|---|---|
 | `PADDING_FACTOR` | 0.1 | objects get cut off | you want tight, context-free crops |

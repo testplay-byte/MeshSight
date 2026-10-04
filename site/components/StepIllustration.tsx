@@ -624,22 +624,616 @@ function cells() {
   );
 }
 
+/* classes: a loose brainstorm list narrowed to two short lowercase names */
+function classes() {
+  const rows: [number, string, boolean][] = [
+    [118, "cat", true],
+    [148, "dog", false],
+    [178, "hand", true],
+    [208, "Cat_V2", false],
+  ];
+  return (
+    <Frame label="Choosing a short list of object class names">
+      <rect x="26" y="54" width="222" height="172" rx="16" stroke={S.dim} strokeWidth="2.5" />
+      <text x="46" y="84" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        candidate names
+      </text>
+      {rows.map(([y, name, keep]) => (
+        <g key={name}>
+          <text
+            x="76"
+            y={y}
+            fill={keep ? S.lime : "rgba(255,255,255,0.26)"}
+            fontSize="16"
+            fontFamily="ui-monospace, monospace"
+          >
+            {name}
+          </text>
+          {keep ? (
+            <g>
+              <circle cx="50" cy={y - 5} r="8" fill={S.lime} stroke="none" />
+              <path d={`M45.5 ${y - 5}l3 3 5-6`} stroke="#0d1512" strokeWidth="2.5" />
+            </g>
+          ) : (
+            <path d={`M74 ${y - 5}h${name.length * 9.6 + 4}`} stroke={S.coral} strokeWidth="2" />
+          )}
+        </g>
+      ))}
+      <Arrow x={262} y={140} />
+      <rect x="344" y="92" width="176" height="46" rx="14" fill={S.lime} stroke="none" />
+      <text
+        x="432"
+        y="122"
+        textAnchor="middle"
+        fill="#0d1512"
+        fontSize="18"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat
+      </text>
+      <rect x="344" y="162" width="176" height="46" rx="14" fill={S.lime} stroke="none" />
+      <text
+        x="432"
+        y="192"
+        textAnchor="middle"
+        fill="#0d1512"
+        fontSize="18"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        hand
+      </text>
+      <text
+        x="432"
+        y="240"
+        textAnchor="middle"
+        fill={S.soft}
+        fontSize="15"
+        fontFamily="ui-monospace, monospace"
+      >
+        lowercase, one word
+      </text>
+    </Frame>
+  );
+}
+
+/* variety: one object shot again and again at new sizes and angles */
+function variety() {
+  const CAT =
+    "M-36 43c-10-16-6-42 14-54 6-16 16-22 22-22s16 6 22 22c20 12 24 38 14 54-12 10-60 10-72 0Z";
+  const EARS = "M-20-21-26-43l20 13M20-21l6-22-20 13";
+  const shots: [number, number, number, number][] = [
+    [82, 104, 0.36, 0],
+    [214, 104, 0.58, -14],
+    [348, 100, 0.46, 12],
+    [478, 96, 0.3, -8],
+  ];
+  return (
+    <Frame label="One object photographed repeatedly from different angles and distances">
+      {[26, 158, 290, 422].map((x) => (
+        <rect key={x} x={x} y="44" width="112" height="116" rx="12" stroke={S.dim} strokeWidth="2.5" />
+      ))}
+      {shots.map(([x, y, s, r], i) => (
+        <g key={i} transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}>
+          <path d={CAT} stroke={S.lime} strokeWidth={2.5 / s} fill={S.fill} />
+          <path d={EARS} stroke={S.lime} strokeWidth={2.5 / s} />
+        </g>
+      ))}
+      <text
+        x="280"
+        y="192"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        angles + distance
+      </text>
+      <text
+        x="280"
+        y="218"
+        textAnchor="middle"
+        fill={S.soft}
+        fontSize="15"
+        fontFamily="ui-monospace, monospace"
+      >
+        same object
+      </text>
+    </Frame>
+  );
+}
+
+/* install: pip install labelme in a terminal, the app window arrives */
+function install() {
+  return (
+    <Frame label="Installing LabelMe with pip, then the app window appears">
+      <rect x="26" y="76" width="276" height="128" rx="14" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M26 104h276" stroke={S.dim} strokeWidth="1.5" />
+      <circle cx="46" cy="90" r="4" fill={S.dim} stroke="none" />
+      <circle cx="60" cy="90" r="4" fill={S.dim} stroke="none" />
+      <circle cx="74" cy="90" r="4" fill={S.dim} stroke="none" />
+      <text x="44" y="140" fill={S.soft} fontSize="17" fontFamily="ui-monospace, monospace">
+        $
+      </text>
+      <text x="70" y="140" fill={S.soft} fontSize="17" fontFamily="ui-monospace, monospace">
+        pip install
+      </text>
+      <text x="208" y="140" fill={S.lime} fontSize="17" fontWeight="600" fontFamily="ui-monospace, monospace">
+        labelme
+      </text>
+      <text x="44" y="176" fill="rgba(255,255,255,0.28)" fontSize="14" fontFamily="ui-monospace, monospace">
+        installing...
+      </text>
+      <rect x="44" y="186" width="230" height="7" rx="3.5" stroke={S.dim} strokeWidth="1.5" />
+      <rect x="44" y="186" width="150" height="7" rx="3.5" fill={S.lime} stroke="none" />
+      <Arrow x={316} y={140} />
+      <rect x="388" y="70" width="146" height="144" rx="16" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M388 100h146" stroke={S.lime} strokeWidth="1.5" opacity="0.4" />
+      <text
+        x="461"
+        y="90"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        labelme
+      </text>
+      <circle cx="461" cy="142" r="18" fill={S.lime} stroke="none" />
+      <path d="M452 142l7 7 13-16" stroke="#0d1512" strokeWidth="3" />
+      <text
+        x="461"
+        y="192"
+        textAnchor="middle"
+        fill={S.soft}
+        fontSize="15"
+        fontFamily="ui-monospace, monospace"
+      >
+        installed
+      </text>
+    </Frame>
+  );
+}
+
+/* workingcopy: the locked master photos/ folder copied into ANNOTATED/ */
+function workingcopy() {
+  return (
+    <Frame label="The master photos folder copied into a separate annotated folder">
+      <path
+        d="M34 96h44l12 16h86a8 8 0 0 1 8 8v74a8 8 0 0 1-8 8H34a8 8 0 0 1-8-8v-90a8 8 0 0 1 8-8Z"
+        stroke={S.dim}
+        strokeWidth="2.5"
+      />
+      <path d="M26 130h158" stroke={S.dim} strokeWidth="1.5" opacity="0.5" />
+      <rect x="40" y="150" width="22" height="17" rx="4" stroke={S.dim} strokeWidth="2" />
+      <path d="M45 150v-6a6 6 0 0 1 12 0v6" stroke={S.dim} strokeWidth="2" />
+      <text x="76" y="166" fill={S.soft} fontSize="17" fontWeight="600" fontFamily="ui-monospace, monospace">
+        photos/
+      </text>
+      <text x="76" y="190" fill="rgba(255,255,255,0.3)" fontSize="14" fontFamily="ui-monospace, monospace">
+        master
+      </text>
+      <Arrow x={200} y={150} />
+      <path
+        d="M272 58h58l16 20h180a8 8 0 0 1 8 8v152a8 8 0 0 1-8 8H272a8 8 0 0 1-8-8V66a8 8 0 0 1 8-8Z"
+        stroke={S.lime}
+        strokeWidth="2.5"
+        fill={S.fill}
+      />
+      <path d="M264 112h270" stroke={S.lime} strokeWidth="1.5" opacity="0.4" />
+      <text x="284" y="100" fill={S.lime} fontSize="17" fontWeight="600" fontFamily="ui-monospace, monospace">
+        ANNOTATED/
+      </text>
+      <rect x="284" y="124" width="118" height="62" rx="10" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <text
+        x="343"
+        y="159"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat/
+      </text>
+      <rect x="414" y="124" width="118" height="62" rx="10" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <text
+        x="473"
+        y="159"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        hand/
+      </text>
+      <text
+        x="399"
+        y="216"
+        textAnchor="middle"
+        fill={S.soft}
+        fontSize="15"
+        fontFamily="ui-monospace, monospace"
+      >
+        annotate here
+      </text>
+    </Frame>
+  );
+}
+
+/* stages: the run log, each stage printing its own result */
+function stages() {
+  const rows: [string, string, string][] = [
+    ["04", "crops", "128"],
+    ["07", "clusters", "9"],
+    ["08", "folders", "14"],
+  ];
+  return (
+    <Frame label="A run log where each pipeline stage prints its own result">
+      <rect x="30" y="44" width="430" height="170" rx="16" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M30 92h430" stroke={S.dim} strokeWidth="1.5" />
+      <text x="52" y="76" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        stage report
+      </text>
+      <path d="M52 139h386M52 173h386" stroke={S.dim} strokeWidth="1.5" opacity="0.4" />
+      {rows.map(([n, name, count], i) => {
+        const y = 122 + i * 34;
+        return (
+          <g key={n}>
+            <text x="52" y={y} fill="rgba(255,255,255,0.3)" fontSize="16" fontFamily="ui-monospace, monospace">
+              {n}
+            </text>
+            <text x="86" y={y} fill={S.soft} fontSize="16" fontFamily="ui-monospace, monospace">
+              {name}
+            </text>
+            <text
+              x="390"
+              y={y}
+              textAnchor="end"
+              fill={S.lime}
+              fontSize="16"
+              fontWeight="600"
+              fontFamily="ui-monospace, monospace"
+            >
+              {count}
+            </text>
+            <circle cx="418" cy={y - 6} r="9" fill={S.lime} stroke="none" />
+            <path d={`M413.5 ${y - 6}l3.5 3.5 7-8.5`} stroke="#0d1512" strokeWidth="2.5" />
+          </g>
+        );
+      })}
+      <circle cx="506" cy="130" r="30" fill={S.lime} stroke="none" />
+      <path d="M491 130l10 10 19-23" stroke="#0d1512" strokeWidth="3.5" />
+      <text
+        x="506"
+        y="192"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="20"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        PASS
+      </text>
+    </Frame>
+  );
+}
+
+/* knobs: one setting turned, the clusters regroup */
+function knobs() {
+  const dials = [
+    { label: "neighbors", x: 146 },
+    { label: "min size", x: 214 },
+    { label: "min group", x: 180 },
+  ];
+  return (
+    <Frame label="Turning one clustering setting to split the data into fewer or more groups">
+      <text x="30" y="60" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        config.py
+      </text>
+      {dials.map((d, i) => {
+        const y = 104 + i * 44;
+        const live = i === 1;
+        return (
+          <g key={d.label}>
+            <text x="30" y={y} fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+              {d.label}
+            </text>
+            <path d={`M126 ${y - 6}h110`} stroke={S.dim} strokeWidth="2.5" />
+            <path d={`M126 ${y - 14}v16M236 ${y - 14}v16`} stroke={S.dim} strokeWidth="1.5" />
+            <circle
+              cx={d.x}
+              cy={y - 6}
+              r="8"
+              stroke={live ? S.lime : S.soft}
+              strokeWidth="2.5"
+              fill={live ? S.lime : "none"}
+            />
+          </g>
+        );
+      })}
+      <circle cx="214" cy="142" r="16" stroke={S.lime} strokeWidth="1.5" strokeDasharray="4 5" opacity="0.7" />
+      <Arrow x={254} y={140} />
+      <circle cx="348" cy="110" r="6" fill={S.lime} stroke="none" />
+      <circle cx="362" cy="104" r="6" fill={S.lime} stroke="none" />
+      <circle cx="356" cy="124" r="6" fill={S.lime} stroke="none" />
+      <circle cx="386" cy="152" r="6" fill={S.sky} stroke="none" />
+      <circle cx="398" cy="160" r="6" fill={S.sky} stroke="none" />
+      <circle cx="378" cy="172" r="6" fill={S.sky} stroke="none" />
+      <circle cx="355" cy="116" r="24" stroke={S.lime} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <circle cx="387" cy="162" r="26" stroke={S.sky} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <circle cx="452" cy="106" r="5" fill={S.lime} stroke="none" />
+      <circle cx="466" cy="112" r="5" fill={S.lime} stroke="none" />
+      <circle cx="494" cy="102" r="5" fill={S.sky} stroke="none" />
+      <circle cx="506" cy="112" r="5" fill={S.sky} stroke="none" />
+      <circle cx="452" cy="166" r="5" fill={S.sky} stroke="none" />
+      <circle cx="466" cy="172" r="5" fill={S.sky} stroke="none" />
+      <circle cx="494" cy="168" r="5" fill={S.lime} stroke="none" />
+      <circle cx="506" cy="160" r="5" fill={S.lime} stroke="none" />
+      <circle cx="459" cy="109" r="16" stroke={S.lime} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <circle cx="500" cy="107" r="16" stroke={S.sky} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <circle cx="459" cy="169" r="16" stroke={S.sky} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <circle cx="500" cy="164" r="16" stroke={S.lime} strokeWidth="1.5" strokeDasharray="4 6" opacity="0.6" />
+      <text x="366" y="214" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        2 groups
+      </text>
+      <text
+        x="482"
+        y="214"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        4 groups
+      </text>
+    </Frame>
+  );
+}
+
+/* dataset: the YOLO folder layout the converter writes */
+function dataset() {
+  const items = [
+    { y: 73, chip: S.lime, name: "images/", note: "train/ val/" },
+    { y: 117, chip: S.sky, name: "labels/", note: "train/ val/" },
+    { y: 161, chip: S.soft, name: "dataset.yaml", note: "class names" },
+    { y: 205, chip: S.soft, name: "classes.txt", note: "same order" },
+  ];
+  return (
+    <Frame label="The images, labels and dataset.yaml a training run needs">
+      <path
+        d="M36 114h52l12 14h84a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H36a8 8 0 0 1-8-8v-38a8 8 0 0 1 8-8Z"
+        stroke={S.lime}
+        strokeWidth="2.5"
+        fill={S.fill}
+      />
+      <text
+        x="110"
+        y="148"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        yolo_dataset/
+      </text>
+      <path d="M192 141h16M208 73v132" stroke={S.soft} strokeWidth="1.5" />
+      {items.map((it) => (
+        <g key={it.name}>
+          <path d={`M208 ${it.y}h22`} stroke={S.soft} strokeWidth="1.5" />
+          <rect x="230" y={it.y - 10} width="20" height="20" rx="5" stroke={it.chip} strokeWidth="2" />
+          <text
+            x="262"
+            y={it.y + 6}
+            fill={it.chip}
+            fontSize={it.name.length > 8 ? "16" : "18"}
+            fontWeight="600"
+            fontFamily="ui-monospace, monospace"
+          >
+            {it.name}
+          </text>
+          <text x="406" y={it.y + 6} fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+            {it.note}
+          </text>
+        </g>
+      ))}
+      <text x="280" y="248" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        what training reads
+      </text>
+    </Frame>
+  );
+}
+
+/* epochs: the loss falls, then settles on a plateau */
+function epochs() {
+  return (
+    <Frame label="The training loss falling over epochs and settling on a low plateau">
+      <text x="76" y="44" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        loss
+      </text>
+      <path d="M76 56v168M76 224h408" stroke={S.dim} strokeWidth="2.5" />
+      <path
+        d="M84 104C126 124 150 166 174 184C206 204 240 212 276 214C334 215 400 215 470 215"
+        stroke={S.sky}
+        strokeWidth="2"
+        strokeDasharray="6 6"
+        opacity="0.8"
+      />
+      <path d="M84 78C124 100 148 148 172 168C204 194 238 202 272 204C330 206 400 206 470 206" stroke={S.lime} strokeWidth="3" />
+      <circle cx="134" cy="124" r="4" fill={S.lime} stroke="none" />
+      <circle cx="272" cy="204" r="4" fill={S.lime} stroke="none" />
+      <circle cx="366" cy="206" r="4" fill={S.lime} stroke="none" />
+      <path d="M272 204v20" stroke={S.soft} strokeWidth="1.5" strokeDasharray="3 5" opacity="0.7" />
+      <text x="376" y="188" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        plateau
+      </text>
+      <text x="280" y="250" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        epochs
+      </text>
+    </Frame>
+  );
+}
+
+/* export: best.pt through the flags into a .tflite on the phone */
+function exportScene() {
+  return (
+    <Frame label="Converting best.pt into a TFLite model for the phone">
+      <rect x="26" y="96" width="112" height="88" rx="16" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <path d="M46 124h72M46 148h48M46 172h60" stroke={S.lime} strokeWidth="2.5" opacity="0.6" />
+      <text
+        x="82"
+        y="210"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="17"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        best.pt
+      </text>
+      <Arrow x={150} y={140} />
+      <rect x="218" y="72" width="142" height="136" rx="16" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <path d="M232 88h114" stroke={S.sky} strokeWidth="1.5" opacity="0.4" />
+      <circle cx="238" cy="108" r="3.5" fill={S.sky} stroke="none" />
+      <text x="252" y="108" fill={S.coral} fontSize="15" fontWeight="700" fontFamily="ui-monospace, monospace">
+        nms=False
+      </text>
+      <circle cx="238" cy="144" r="3.5" fill={S.sky} stroke="none" />
+      <text x="252" y="144" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        half=False
+      </text>
+      <circle cx="238" cy="180" r="3.5" fill={S.sky} stroke="none" />
+      <text x="252" y="180" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        int8=False
+      </text>
+      <text x="289" y="234" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        critical flags
+      </text>
+      <Arrow x={372} y={140} />
+      <rect x="440" y="44" width="100" height="192" rx="20" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M474 60h32" stroke={S.dim} strokeWidth="2.5" />
+      <rect x="448" y="112" width="88" height="56" rx="10" fill={S.lime} stroke="none" />
+      <text
+        x="492"
+        y="146"
+        textAnchor="middle"
+        fill="#0d1512"
+        fontSize="16"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        .tflite
+      </text>
+      <text x="490" y="208" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        loaded
+      </text>
+    </Frame>
+  );
+}
+
+/* loadmodel: the two files go in, Obj 0 becomes a real class */
+function loadmodel() {
+  return (
+    <Frame label="Loading the model and class labels, turning Obj 0 into a real class name">
+      <rect x="26" y="76" width="134" height="50" rx="12" stroke={S.lime} strokeWidth="2.5" fill={S.fill} />
+      <text
+        x="93"
+        y="108"
+        textAnchor="middle"
+        fill={S.lime}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        best.tflite
+      </text>
+      <rect x="26" y="150" width="134" height="50" rx="12" stroke={S.sky} strokeWidth="2.5" fill={S.fill2} />
+      <text
+        x="93"
+        y="182"
+        textAnchor="middle"
+        fill={S.sky}
+        fontSize="16"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        classes.txt
+      </text>
+      <Arrow x={176} y={140} />
+      <rect x="244" y="40" width="96" height="200" rx="20" stroke={S.dim} strokeWidth="2.5" />
+      <path d="M276 56h32" stroke={S.dim} strokeWidth="2.5" />
+      <circle cx="264" cy="116" r="4.5" fill={S.lime} stroke="none" />
+      <text x="278" y="122" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        model
+      </text>
+      <circle cx="264" cy="162" r="4.5" fill={S.sky} stroke="none" />
+      <text x="278" y="168" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        labels
+      </text>
+      <rect x="350" y="94" width="74" height="48" rx="12" stroke={S.dim} strokeWidth="2.5" />
+      <text x="387" y="123" textAnchor="middle" fill={S.soft} fontSize="15" fontFamily="ui-monospace, monospace">
+        Obj 0
+      </text>
+      <path d="M432 118h24m-9-8 9 8-9 8" stroke={S.soft} strokeWidth="2.5" />
+      <rect x="466" y="94" width="74" height="48" rx="12" fill={S.lime} stroke="none" />
+      <text
+        x="503"
+        y="124"
+        textAnchor="middle"
+        fill="#0d1512"
+        fontSize="16"
+        fontWeight="700"
+        fontFamily="ui-monospace, monospace"
+      >
+        cat_C1
+      </text>
+      <text
+        x="540"
+        y="176"
+        textAnchor="end"
+        fill={S.lime}
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="ui-monospace, monospace"
+      >
+        real names
+      </text>
+    </Frame>
+  );
+}
+
 /** Registry - referenced by [[illustration:name]] markers in the guides. */
 const REGISTRY: Record<string, () => React.ReactNode> = {
   collect,
+  classes,
+  variety,
   tool,
+  install,
   launch,
+  workingcopy,
   annotate,
   annotated,
   zip,
   drive,
   cells,
+  stages,
   colab,
   "split-cluster": splitCluster,
+  knobs,
   map,
   convert,
+  dataset,
   train,
+  epochs,
+  export: exportScene,
   app,
+  loadmodel,
 };
 
 export function getIllustration(name: string): React.ReactNode | null {

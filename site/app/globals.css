@@ -1290,29 +1290,158 @@ body {
 }
 @media (max-width: 560px) { .wiz-progress { width: 64px; } .wiz-head-title { display: none; } }
 
-/* body */
-.wiz-body {
+/* ── Wizard shell ──────────────────────────────────────────────────────
+   One scroller (.wiz-body) at every breakpoint, so the step-change scroll
+   reset works the same on phone and desktop. The rail is a sibling column
+   that never scrolls away; on narrow screens it is dropped and the header's
+   progress bar carries the orientation instead. */
+.wiz-shell {
   flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.wiz-rail { display: none; }
+
+.wiz-body {
+  min-width: 0;
   overflow-y: auto;
-  padding: 28px 20px 24px;
+  padding: 26px 18px 28px;
   display: flex;
   justify-content: center;
+  /* content-height, not stretched — otherwise the 1fr prose row expands to
+     the viewport and the Next button floats far below the text */
+  align-items: flex-start;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
   /* Chrome's scroll anchoring re-adjusts scrollTop when the taller step lays
      out, which undoes the scrollTo(0) that runs on every step change. */
   overflow-anchor: none;
+  -webkit-overflow-scrolling: touch;
 }
-@media (min-width: 768px) { .wiz-body { padding: 44px 32px 32px; } }
-.wiz-step { width: 100%; max-width: 760px; }
-.wiz-step > h1 { margin-bottom: 22px; }
-.wiz-illo { margin: 0 0 26px; }
+.wiz-step { width: 100%; max-width: 780px; }
+.wiz-step-head { margin-bottom: 22px; }
+.wiz-prose > *:first-child { margin-top: 0; }
+.wiz-illo { margin: 0 0 24px; }
+
 /* The scene is a 560x280 viewBox. Below ~640px it scales to ~0.57, which
    shrinks its 12–15px labels to 7–9px — unreadable. Hold it near full size
    and let the reader pan instead of losing the illustration entirely. */
 @media (max-width: 640px) {
   .wiz-illo { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .wiz-illo .illo-card svg { min-width: 460px; }
+}
+
+/* ── Step rail (≥1024px) ──────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .wiz-shell { grid-template-columns: 214px minmax(0, 1fr); }
+  .wiz-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 30px 14px 30px 22px;
+    border-right: 1px solid var(--color-line-subtle);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .wiz-rail-title { margin: 0 0 2px 10px; }
+  .wiz-rail-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .wiz-rail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 12.5px;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s var(--ease-emphasized), color 0.15s var(--ease-emphasized);
+  }
+  .wiz-rail-row:hover { background: var(--color-surface-1); color: var(--color-text-secondary); }
+  .wiz-rail-row[aria-current="step"] {
+    background: var(--color-surface-2);
+    border-color: var(--color-line);
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .wiz-rail-n {
+    flex-shrink: 0;
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 10.5px;
+    color: var(--color-text-dim);
+  }
+  .wiz-rail-row[aria-current="step"] .wiz-rail-n,
+  .wiz-rail-row.done .wiz-rail-n { color: var(--color-accent-lime); }
+  .wiz-rail-t { min-width: 0; }
+  .wiz-body { padding: 40px 34px 36px; }
+}
+
+/* ── Desktop: illustration becomes a sticky right-hand column ─────────
+   Only from 1600px: the scenes are a 560-unit viewBox with 15px labels, so
+   the column has to be ~500px before the artwork stays as legible as it is
+   on a phone. Below that the artwork sits above the prose at full width,
+   which is both readable and a better use of the space. */
+@media (min-width: 1024px) {
+  .wiz-step { max-width: 960px; }
+}
+
+@media (min-width: 1600px) {
+  .wiz-body { padding: 48px 48px 44px; }
+  .wiz-step {
+    max-width: 1320px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 500px;
+    /* Row 1 hugs the heading and row 2 absorbs whatever height the spanning
+       artwork adds — without the 1fr the artwork's height is split across both
+       rows and opens a gap between the heading and the body copy. */
+    grid-template-rows: auto 1fr;
+    column-gap: 56px;
+    align-items: start;
+  }
+  .wiz-step-head { grid-column: 1; grid-row: 1; }
+  .wiz-illo {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 0;
+    margin: 0;
+  }
+  .wiz-illo .illo-card { padding: 12px; }
+  .wiz-illo .illo-card svg { max-width: 100%; }
+  .wiz-prose { grid-column: 1; grid-row: 2; min-width: 0; }
+  .wiz-nav { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1920px) {
+  .wiz-step { grid-template-columns: minmax(0, 1fr) 560px; column-gap: 64px; }
+  .wiz-shell { grid-template-columns: 244px minmax(0, 1fr); }
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .wiz-body { padding: 22px 16px 30px; }
+  .wiz-step-head { margin-bottom: 18px; }
+  /* Full-width actions with a comfortable thumb target, stacked.
+     The heights are re-asserted at the end of this file, after the base
+     `.wiz-nav .btn-*` rules they would otherwise lose to. */
+  .wiz-nav { flex-direction: column-reverse; align-items: stretch; gap: 10px; }
+  .wiz-nav > * { width: 100%; justify-content: center; }
+  .wiz-check-row { padding: 14px 14px; font-size: 14px; }
 }
 
 /* checklist */
@@ -1641,8 +1770,6 @@ body:has(.wizard) .orb { display: none; }
 .wiz-nav > * { min-width: 0; }
 .wiz-nav .btn-ghost { height: 44px; font-size: 13px; }
 .wiz-nav .btn-primary { height: 46px; font-size: 14px; padding: 0 22px; }
-/* body no longer needs to reserve space for a footer */
-.wiz-body { padding-bottom: 64px; }
 
 /* ════════════════════════════════════════════════════════════════════
    GLASS SURFACES — ported from proto-kit/src/proto-kit/styles/glass.css
@@ -1823,3 +1950,9 @@ body:has(.wizard) .orb { display: none; }
   transition: top 0.2s var(--ease-emphasized);
 }
 .skip-link:focus { top: 12px; }
+
+/* ── Mobile actions (last, so they beat the base .wiz-nav button sizes) ── */
+@media (max-width: 640px) {
+  .wiz-nav .btn-ghost { height: 50px; font-size: 14px; }
+  .wiz-nav .btn-primary { height: 50px; font-size: 15px; }
+}

@@ -36,6 +36,8 @@ own annotation file. Pick either — nothing downstream can tell the difference.
 
 ## Step 2 — Install it
 
+[[illustration:install]]
+
 **Using LabelMe** — one command:
 
 ```bash
@@ -79,6 +81,8 @@ Now open your photos in whichever tool you picked:
 - **CVAT** → upload them into the project
 
 ## Step 4 — Make a working copy first
+
+[[illustration:workingcopy]]
 
 Never annotate your originals. Copy them, annotate the copy:
 

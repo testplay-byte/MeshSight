@@ -133,6 +133,8 @@ which ones are worth turning.
 
 ## Step 3 — Read the output
 
+[[illustration:stages]]
+
 Each stage prints a header and a short report. These are the ones worth
 watching:
 

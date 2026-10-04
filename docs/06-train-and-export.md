@@ -48,6 +48,8 @@ TFLite mobile + your phone's RAM handle gracefully.
 
 ## Step 4 — Train
 
+[[illustration:epochs]]
+
 ```python
 import os
 os.chdir("/content")          # dataset.yaml's `path:` is relative to cwd
@@ -79,6 +81,8 @@ Typical time: ~100 epochs on a few hundred images ≈ 10–30 min on T4.
 > add data (Guide 02), fix outliers (Guide 04), not epochs.
 
 ## Step 5 — Export to TFLite (the critical flags)
+
+[[illustration:export]]
 
 ```python
 exported = model.export(

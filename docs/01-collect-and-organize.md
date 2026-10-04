@@ -13,6 +13,8 @@ every quality problem here multiplies later.
 
 ## Step 1 — Decide your classes
 
+[[illustration:classes]]
+
 Write down what you want the model to recognize, as simple nouns:
 
 - `cat`, `dog`, `hand` — good first classes
@@ -24,6 +26,8 @@ Write down what you want the model to recognize, as simple nouns:
 > care about.
 
 ## Step 2 — Gather photos
+
+[[illustration:variety]]
 
 Shoot or collect photos per class. What makes a photo *useful*:
 
