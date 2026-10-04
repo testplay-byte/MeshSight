@@ -13,6 +13,7 @@ It does three things:
 """
 
 import importlib
+import re
 import shutil
 import subprocess
 import sys
@@ -127,9 +128,31 @@ def repair_pillow(original_version: str) -> None:
 
     console.print("  [yellow]Pillow is installed but broken.[/yellow]")
     console.print(f"  [dim]{err}[/dim]")
-    console.print("  [dim]Reinstalling the version this session started with...[/dim]")
 
-    pin = f"Pillow=={original_version}" if original_version else "Pillow"
+    # Which version should we reinstall?
+    #
+    # The metadata (and therefore PILLOW_VERSION_AT_START) is NOT trustworthy
+    # here: it claimed 12.3.0 while the compiled `_imaging` extension said it
+    # was built for 11.3.0. Colab patches the preinstalled Pillow, so the
+    # dist-info and the actual .so disagree. Pinning to the metadata then
+    # reinstalls a version whose wheel may not even exist for this Python,
+    # and every attempt fails for a reason that never reaches the console.
+    #
+    # The error text names the version the extension was BUILT for. That is the
+    # one guaranteed to be installable here, and reinstalling it makes the
+    # .so and the .py files agree again.
+    m = re.search(r"Core version:\s*([0-9][0-9.]*)", err)
+    target = m.group(1) if m else original_version
+
+    if m and m.group(1) != original_version:
+        console.print(
+            f"  [dim]metadata says {original_version or '?'} but the compiled"
+            f" extension was built for {m.group(1)} -"
+            f" reinstalling {m.group(1)} instead.[/dim]"
+        )
+    console.print(f"  [dim]Reinstalling Pillow=={target}...[/dim]")
+
+    pin = f"Pillow=={target}" if target else "Pillow"
     attempts = [
         ["install", "--no-cache-dir", "--force-reinstall", pin, "-q"],
         # The uninstall pass matters: if pip's metadata already claims the
@@ -139,9 +162,17 @@ def repair_pillow(original_version: str) -> None:
     ]
     for cmd in attempts:
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", *cmd])
-        except subprocess.CalledProcessError:
-            pass
+            out = subprocess.run(
+                [sys.executable, "-m", "pip", *cmd],
+                capture_output=True, text=True,
+            )
+            if out.returncode != 0:
+                # Never fail silently again: a swallowed pip error is what made
+                # the previous version of this look like it "did nothing".
+                tail = (out.stderr or out.stdout or "").strip().splitlines()
+                console.print(f"  [dim]pip {' '.join(cmd[:1])} failed: {tail[-1] if tail else 'unknown'}[/dim]")
+        except Exception as exc:
+            console.print(f"  [dim]pip {' '.join(cmd[:1])} errored: {exc}[/dim]")
         importlib.invalidate_caches()
         ok, err = _healthy()
         if ok:
