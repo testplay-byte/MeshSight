@@ -29,7 +29,6 @@ class ModelManager {
 
     companion object {
         private const val TAG = "ModelManager"
-        private const val FLOAT_BYTES = 4
 
         /** Minimum confidence for a detection to be kept. */
         const val CONFIDENCE_THRESHOLD = 0.35f
@@ -85,6 +84,9 @@ class ModelManager {
 
     /** Which input tensor is the image (a model may have more than one). */
     private var imageInputIndex: Int = 0
+
+    /** Element type of the image input tensor: FLOAT32, FLOAT16, INT8, UINT8. */
+    private var inputDtype: Int = org.tensorflow.lite.DataType.FLOAT32
 
     /** True once a model is loaded and [runInference] can be called. */
     val isReady: Boolean get() = interpreter != null
@@ -187,7 +189,9 @@ interpreter = Interpreter(modelFile, options)
                     break
                 }
             }
-            val shape = interpreter!!.getInputTensor(imageInputIndex).shape()
+            val imageTensor = interpreter!!.getInputTensor(imageInputIndex)
+            inputDtype = imageTensor.dataType()
+            val shape = imageTensor.shape()
 
             fun dim(i: Int, fallback: Int): Int =
                 if (i < shape.size && shape[i] > 0) shape[i] else fallback
@@ -265,24 +269,37 @@ interpreter = Interpreter(modelFile, options)
             return emptyList()
         }
 
-        // 3. Locate output tensors: 3-D = boxes tensor, 4-D = mask prototypes
+        // 3. Locate output tensors.
+        //
+        // Boxes = the 3-D tensor (first one wins). Prototypes = the 4-D tensor.
+        // Orientation says nothing about the *format*, only the layout.
         var boxOutputIndex = -1
         var maskOutputIndex = -1
         for (i in 0 until interp.outputTensorCount) {
             val shape = interp.getOutputTensor(i).shape()
-            if (shape.size == 3) boxOutputIndex = i
-            if (shape.size == 4) maskOutputIndex = i
+            if (shape.size == 3 && boxOutputIndex == -1) boxOutputIndex = i
+            if (shape.size == 4 && maskOutputIndex == -1) maskOutputIndex = i
         }
         if (boxOutputIndex == -1) boxOutputIndex = 0
 
-        val boxShape = interp.getOutputTensor(boxOutputIndex).shape()
-        val boxBuffer = allocateFloatBuffer(boxShape.fold(1) { acc, d -> acc * d })
+        // A 4-D prototype tensor means this is a segmenter, so the last
+        // MASK_COEFFICIENTS features of each row are mask coefficients.
+        val isSegmenter = maskOutputIndex != -1
+
+        val boxTensor = interp.getOutputTensor(boxOutputIndex)
+        val boxShape = boxTensor.shape()
+        val boxCount = boxShape.fold(1) { acc, d -> acc * d }
+        val boxBuffer = allocateFor(boxTensor, boxCount)
+        val boxDtype = boxTensor.dataType()
 
         var protoBuffer: ByteBuffer? = null
         var protoShape: IntArray? = null
+        var protoDtype = org.tensorflow.lite.DataType.FLOAT32
         if (maskOutputIndex != -1) {
-            protoShape = interp.getOutputTensor(maskOutputIndex).shape()
-            protoBuffer = allocateFloatBuffer(protoShape.fold(1) { acc, d -> acc * d })
+            val t = interp.getOutputTensor(maskOutputIndex)
+            protoShape = t.shape()
+            protoDtype = t.dataType()
+            protoBuffer = allocateFor(t, protoShape.fold(1) { acc, d -> acc * d })
         }
 
         // 4. Execute
@@ -295,30 +312,107 @@ interpreter = Interpreter(modelFile, options)
         protoBuffer?.rewind()
 
         // 5. Parse + filter
-        val rawResults = parseOutput(boxBuffer, boxShape, classLabels)
+        val rawResults = parseOutput(boxBuffer, boxShape, classLabels, boxDtype, isSegmenter)
         val accepted = applyNms(rawResults)
 
         // 6. Reconstruct per-object masks when the model is a segmenter
         if (protoBuffer != null && protoShape != null && accepted.isNotEmpty()) {
-            buildMasks(protoBuffer, protoShape, accepted)
+            buildMasks(protoBuffer, protoShape, protoDtype, accepted)
         }
 
         return accepted
     }
 
-    /** Allocates a direct little-endian ByteBuffer for [floatCount] floats. */
-    private fun allocateFloatBuffer(floatCount: Int): ByteBuffer =
-        ByteBuffer.allocateDirect(floatCount * FLOAT_BYTES).apply {
+    /**
+     * Allocates a direct little-endian buffer of the right element size for
+     * [tensor]. TFLite rejects a buffer whose element type does not match the
+     * tensor's, which is how float16 and int8 models used to fail outright.
+     */
+    private fun allocateFor(tensor: org.tensorflow.lite.Tensor, count: Int): ByteBuffer =
+        ByteBuffer.allocateDirect(count * bytesPerElement(tensor.dataType())).apply {
             order(ByteOrder.nativeOrder())
         }
+
+    private fun bytesPerElement(dtype: Int): Int = when (dtype) {
+        org.tensorflow.lite.DataType.FLOAT32 -> 4
+        org.tensorflow.lite.DataType.FLOAT16 -> 2
+        org.tensorflow.lite.DataType.INT8, org.tensorflow.lite.DataType.UINT8 -> 1
+        org.tensorflow.lite.DataType.INT32, org.tensorflow.lite.DataType.UINT32 -> 4
+        else -> 4
+    }
+
+    /** Reads [count] values out of [buffer] as floats, whatever the dtype. */
+    private fun readAsFloats(buffer: ByteBuffer, dtype: Int, count: Int): FloatArray {
+        val out = FloatArray(count)
+        when (dtype) {
+            org.tensorflow.lite.DataType.FLOAT16 -> {
+                for (i in 0 until count) out[i] = float16ToFloat(buffer.getShort(i * 2))
+            }
+            org.tensorflow.lite.DataType.INT8 -> for (i in 0 until count) out[i] = buffer.get(i).toFloat()
+            org.tensorflow.lite.DataType.UINT8 -> for (i in 0 until count) out[i] = (buffer.get(i).toInt() and 0xFF).toFloat()
+            org.tensorflow.lite.DataType.INT32 -> for (i in 0 until count) out[i] = buffer.getInt(i * 4).toFloat()
+            org.tensorflow.lite.DataType.UINT32 -> for (i in 0 until count) out[i] = (buffer.getInt(i * 4).toLong() and 0xFFFFFFFFL).toFloat()
+            else -> for (i in 0 until count) out[i] = buffer.getFloat(i * 4)
+        }
+        return out
+    }
+
+    private fun float16ToFloat(h: Short): Float {
+        val sign = (h.toInt() shr 15 and 0x1) shl 31
+        var exp = (h.toInt() shr 10) and 0x1F
+        var mant = h.toInt() and 0x3FF
+        return when {
+            exp == 0 -> {
+                if (mant == 0) java.lang.Float.intBitsToFloat(sign)
+                else {
+                    // subnormal: renormalise
+                    var e = -1
+                    do { e++; mant = mant shl 1 } while (mant and 0x400 == 0)
+                    mant = mant and 0x3FF
+                    java.lang.Float.intBitsToFloat(
+                        sign or ((127 - 15 - e) shl 23) or (mant shl 13),
+                    )
+                }
+            }
+            exp == 0x1F ->
+                if (mant == 0) java.lang.Float.intBitsToFloat(sign or 0x7F800000)
+                else java.lang.Float.intBitsToFloat(sign or 0x7FC00000) // NaN
+            else -> java.lang.Float.intBitsToFloat(sign or ((exp - 15 + 127) shl 23) or (mant shl 13))
+        }
+    }
+
+
+    /**
+     * Decides whether the box tensor carries a YOLOv5-style objectness column.
+     *
+     * Evidence first, convention second:
+     *  - classes.txt length, when loaded, is decisive for both layouts;
+     *  - a detector without an objectness column leaves the remainder exactly
+     *    MASK_COEFFICIENTS long, which a segmenter makes unambiguous;
+     *  - otherwise assume the ultralytics v8 layout (no objectness), because
+     *    that is what Guide 06 exports.
+     */
+    private fun decideObjectness(
+        numFeatures: Int,
+        classLabels: List<String>?,
+        isSegmenter: Boolean
+    ): Boolean {
+        val n = classLabels?.size
+        if (n != null && n > 0) {
+            val base = numFeatures - if (isSegmenter) MASK_COEFFICIENTS else 0
+            if (n == base - 4) return false          // v8: x,y,w,h,classes
+            if (n == base - 5) return true           // v5: x,y,w,h,obj,classes
+        }
+        // A plain detector whose remainder is exactly 4 is unambiguously v8.
+        if (!isSegmenter && numFeatures - 4 in 1..64) return false
+        return false // ultralytics v8 default
+    }
 
     /**
      * Scales [bitmap] to fit the model input, centers it on a black canvas
      * (letterbox), then streams normalized RGB floats (0..1) into NHWC order.
      */
     private fun processBitmapLetterbox(bitmap: Bitmap, newW: Int, newH: Int): ByteBuffer {
-        val buffer = allocateFloatBuffer(inputHeight * inputWidth * inputChannels)
-
         val scaled = Bitmap.createScaledBitmap(bitmap, newW, newH, true)
         val canvasBitmap = Bitmap.createBitmap(inputWidth, inputHeight, Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(canvasBitmap)
@@ -328,16 +422,55 @@ interpreter = Interpreter(modelFile, options)
         val pixels = IntArray(inputWidth * inputHeight)
         canvasBitmap.getPixels(pixels, 0, inputWidth, 0, 0, inputWidth, inputHeight)
 
+        val total = inputWidth * inputHeight * inputChannels
+        val buffer = ByteBuffer
+            .allocateDirect(total * bytesPerElement(inputDtype))
+            .order(ByteOrder.nativeOrder())
+
         for (pixel in pixels) {
-            buffer.putFloat(((pixel shr 16) and 0xFF) / 255.0f)
-            buffer.putFloat(((pixel shr 8) and 0xFF) / 255.0f)
-            buffer.putFloat((pixel and 0xFF) / 255.0f)
+            val r = ((pixel shr 16) and 0xFF) / 255.0f
+            val g = ((pixel shr 8) and 0xFF) / 255.0f
+            val b = (pixel and 0xFF) / 255.0f
+            when (inputDtype) {
+                org.tensorflow.lite.DataType.FLOAT16 -> {
+                    buffer.putShort(floatToFloat16(r))
+                    buffer.putShort(floatToFloat16(g))
+                    buffer.putShort(floatToFloat16(b))
+                }
+                org.tensorflow.lite.DataType.INT8 -> {
+                    // Quantised input: 0..255 maps onto -128..127
+                    buffer.put(((r * 255).toInt() - 128).coerceIn(-128, 127).toByte())
+                    buffer.put(((g * 255).toInt() - 128).coerceIn(-128, 127).toByte())
+                    buffer.put(((b * 255).toInt() - 128).coerceIn(-128, 127).toByte())
+                }
+                org.tensorflow.lite.DataType.UINT8 -> {
+                    buffer.put((r * 255).toInt().coerceIn(0, 255).toByte())
+                    buffer.put((g * 255).toInt().coerceIn(0, 255).toByte())
+                    buffer.put((b * 255).toInt().coerceIn(0, 255).toByte())
+                }
+                else -> {
+                    buffer.putFloat(r)
+                    buffer.putFloat(g)
+                    buffer.putFloat(b)
+                }
+            }
         }
 
         buffer.rewind()
         if (scaled !== bitmap) scaled.recycle()
         canvasBitmap.recycle()
         return buffer
+    }
+
+    /** IEEE-754 binary16 conversion, used for float16 models. */
+    private fun floatToFloat16(f: Float): Short {
+        val bits = java.lang.Float.floatToRawIntBits(f)
+        val sign = (bits shr 16) and 0x8000
+        var exp = ((bits shr 23) and 0xFF) - 127 + 15
+        var mant = bits and 0x7FFFFF
+        if (exp <= 0) return sign.toShort()               // flush subnormals to zero
+        if (exp >= 31) return (sign or 0x7C00).toShort()   // overflow -> inf
+        return (sign or (exp shl 10) or (mant shr 13)).toShort()
     }
 
     /**
@@ -350,42 +483,58 @@ interpreter = Interpreter(modelFile, options)
     private fun parseOutput(
         output: ByteBuffer,
         shape: IntArray,
-        classLabels: List<String>?
+        classLabels: List<String>?,
+        dtype: Int,
+        isSegmenter: Boolean
     ): List<DetectionResult> {
         if (shape.size < 3) return emptyList()
 
         val dim1 = shape[1]
         val dim2 = shape[2]
 
-        // v8 exports are transposed (features < boxes); v5-style are not.
-        val isTransposed = dim1 < dim2
-        val numDetections = if (isTransposed) dim2 else dim1
-        val numFeatures = if (isTransposed) dim1 else dim2
+        // Which axis is features, which is detections. Features are always far
+        // fewer than detections for a real detection model, so the smaller dim
+        // is the feature count. Orientation alone says nothing about format.
+        val featuresFirst = dim1 <= dim2
+        val numDetections = if (featuresFirst) dim2 else dim1
+        val numFeatures = if (featuresFirst) dim1 else dim2
 
-        // v5 layouts carry an objectness score; v8 layouts do not.
-        val hasObjectness = !isTransposed
-        var numClasses = numFeatures - 4 - (if (hasObjectness) 1 else 0)
-
-        // Segmentation models append 32 mask coefficients per box.
-        var hasMask = false
-        if (numClasses > MASK_COEFFICIENTS) {
-            numClasses -= MASK_COEFFICIENTS
-            hasMask = true
+        // Does this model have a YOLOv5-style objectness column?
+        //
+        // It used to be inferred from `!featuresFirst`, which is wrong: a
+        // detections-first export of a YOLOv8 model has no objectness column,
+        // and assuming one shifted every class score by one and every mask
+        // coefficient by one. Confidence collapsed to ~0 and masks came back
+        // blank while inference itself ran fine.
+        //
+        // Decide it from evidence instead. When classes.txt is loaded its
+        // length settles it; otherwise assume the ultralytics v8 layout, which
+        // is what this project's export produces.
+        val hasObjectness = decideObjectness(numFeatures, classLabels, isSegmenter)
+        var numClasses = numFeatures - 4 - (if (hasObjectness) 1 else 0) -
+            (if (isSegmenter) MASK_COEFFICIENTS else 0)
+        if (numClasses <= 0) {
+            lastError = "Could not work out the class count from an output of shape " +
+                shape.joinToString("x")
+            Log.e(TAG, lastError!!)
+            return emptyList()
         }
+        val hasMask = isSegmenter
 
         // Flatten into row-major random access (detections × features)
+        val flat = readAsFloats(output, dtype, numDetections * numFeatures)
         val data = Array(numDetections) { FloatArray(numFeatures) }
-        if (isTransposed) {
+        if (featuresFirst) {
             val tmp = Array(numFeatures) { FloatArray(numDetections) }
             for (f in 0 until numFeatures) {
-                for (d in 0 until numDetections) tmp[f][d] = output.float
+                for (d in 0 until numDetections) tmp[f][d] = flat[f * numDetections + d]
             }
             for (d in 0 until numDetections) {
                 for (f in 0 until numFeatures) data[d][f] = tmp[f][d]
             }
         } else {
             for (d in 0 until numDetections) {
-                for (f in 0 until numFeatures) data[d][f] = output.float
+                for (f in 0 until numFeatures) data[d][f] = flat[d * numFeatures + f]
             }
         }
 
@@ -463,6 +612,7 @@ interpreter = Interpreter(modelFile, options)
     private fun buildMasks(
         protoBuffer: ByteBuffer,
         protoShape: IntArray,
+        protoDtype: Int,
         detections: List<DetectionResult>
     ) {
         // NHWC ([1, H, W, 32]) vs NCHW ([1, 32, H, W]) prototypes
@@ -479,8 +629,7 @@ interpreter = Interpreter(modelFile, options)
         val maskPaddingX = (lastPaddingX / inputWidth * protoW).toInt()
         val maskPaddingY = (lastPaddingY / inputHeight * protoH).toInt()
 
-        val protoData = FloatArray(protoBuffer.capacity() / FLOAT_BYTES)
-        protoBuffer.asFloatBuffer().get(protoData)
+        val protoData = readAsFloats(protoBuffer, protoDtype, protoBuffer.capacity() / bytesPerElement(protoDtype))
 
         for (det in detections) {
             val coeffs = det.maskCoefficients ?: continue
