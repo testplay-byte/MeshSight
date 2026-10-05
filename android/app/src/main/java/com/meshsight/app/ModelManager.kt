@@ -80,13 +80,62 @@ class ModelManager {
     val isReady: Boolean get() = interpreter != null
 
     /**
+     * Why the last [loadModel] failed, for showing the user a real message
+     * instead of a generic "LOAD FAILED" badge.
+     */
+    var lastError: String? = null
+        private set
+
+    /**
+     * Reads the TFLite magic number. Every flatbuffer model starts with a
+     * 4-byte root-table offset followed by "TFL3". A file that does not begin
+     * with it is not a model — feeding it to the interpreter throws deep
+     * inside native code, which is what crashed the app before.
+     */
+    private fun isTflite(file: File): Boolean = try {
+        file.inputStream().use { stream ->
+            val head = ByteArray(8)
+            var read = 0
+            while (read < head.size) {
+                val n = stream.read(head, read, head.size - read)
+                if (n < 0) break
+                read += n
+            }
+            read >= 8 && String(head, 4, 4, Charsets.US_ASCII) == "TFL3"
+        }
+    } catch (e: Exception) {
+        false
+    }
+
+    /**
      * Loads [modelFile], closing any previously loaded model first.
      *
      * @param useGpu When true, tries the GPU delegate and falls back to a
      *               4-thread XNNPACK CPU configuration on failure.
-     * @return true on success, false if the file is missing or unreadable as TFLite.
+     * @return true on success; on failure [lastError] says exactly why.
      */
     fun loadModel(modelFile: File, useGpu: Boolean = true): Boolean {
+        lastError = null
+        // Validate BEFORE touching the interpreter. Catching Throwable below is
+        // the safety net, not the plan: the user gets a specific reason here.
+        if (!modelFile.exists()) {
+            lastError = "Model file does not exist"
+            Log.e(TAG, lastError!!)
+            return false
+        }
+        if (modelFile.length() == 0L) {
+            lastError = "Model file is empty (0 bytes)"
+            Log.e(TAG, lastError!!)
+            return false
+        }
+        if (!isTflite(modelFile)) {
+            lastError =
+                "Not a TFLite model — the file has no TFL3 header. " +
+                    "Pick a .tflite exported from Guide 06."
+            Log.e(TAG, lastError!!)
+            return false
+        }
+
         return try {
             close() // fully clean up previous state
 
@@ -117,8 +166,13 @@ class ModelManager {
             }
             Log.i(TAG, "Model loaded. Input resolution: ${inputWidth}x${inputHeight}")
             true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load model: ${e.message}", e)
+        } catch (t: Throwable) {
+            // Throwable, not Exception: a malformed flatbuffer can surface as
+            // an Error subclass, which `catch (Exception)` let through and
+            // which then killed the app from inside the interpreter.
+            lastError = "${t.javaClass.simpleName}: ${t.message ?: "model could not be parsed"}"
+            Log.e(TAG, "Failed to load model", t)
+            interpreter = null
             false
         }
     }

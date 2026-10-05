@@ -103,12 +103,28 @@ class MainActivity : AppCompatActivity() {
             val inputStream = contentResolver.openInputStream(uri)
                 ?: error("Cannot open stream for model Uri")
 
-            val rawName = uri.lastPathSegment?.substringAfterLast('/') ?: "model.tflite"
-            val safeName = if (rawName.endsWith(".tflite")) rawName else "$rawName.tflite"
+            // Content URIs often expose a numeric id or a "primary:…" path
+            // rather than a real file name, so scrub everything that is not
+            // safe to hand to File().
+            val rawName = (uri.lastPathSegment?.substringAfterLast('/')
+                ?: "model.tflite").substringAfterLast('\\')
+            val safeName = rawName.replace(Regex("[^A-Za-z0-9._-]"), "_")
+                .ifBlank { "model" }
+                .let { if (it.endsWith(".tflite")) it else "$it.tflite" }
 
             val destFile = File(filesDir, safeName)
             FileOutputStream(destFile).use { inputStream.copyTo(it) }
             inputStream.close()
+
+            if (destFile.length() == 0L) {
+                updateBadge("MODEL FILE EMPTY", false, "#EF4444")
+                showModelError(
+                    "The picked file copied as 0 bytes, which usually means the " +
+                        "provider refused the read. Try a file from Downloads " +
+                        "instead of a cloud preview."
+                )
+                return@registerForActivityResult
+            }
 
             if (modelManager.loadModel(destFile, useGpu)) {
                 currentModelFilename = safeName
@@ -123,6 +139,7 @@ class MainActivity : AppCompatActivity() {
                 if (isPaused) togglePause()
             } else {
                 updateBadge("LOAD FAILED", false, "#EF4444")
+                showModelError(modelManager.lastError ?: "The model could not be loaded.")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Model copy/load failed", e)
@@ -179,6 +196,7 @@ class MainActivity : AppCompatActivity() {
 
         // Decode all bitmaps off the main thread
         analysisExecutor.execute {
+            try {
             val bitmaps = uris.mapNotNull { uri ->
                 try {
                     contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
@@ -211,6 +229,10 @@ class MainActivity : AppCompatActivity() {
 
                 analyzeAndShow(bitmaps[0])
                 updateBadge("IMAGE 1/${bitmaps.size}", false, "#94A3B8")
+            }
+            } catch (t: Throwable) {
+                Log.e(TAG, "Gallery import failed on the analysis thread", t)
+                CrashHandler.getDefault()?.uncaughtException(Thread.currentThread(), t)
             }
         }
     }
@@ -275,11 +297,16 @@ class MainActivity : AppCompatActivity() {
             val file = File(filesDir, savedModel)
             if (file.exists()) {
                 analysisExecutor.execute {
-                    val ok = modelManager.loadModel(file, useGpu)
-                    currentModelFilename = if (ok) savedModel else null
-                    val label = if (ok) "MODEL READY" else "MODEL ERR"
-                    val color = if (ok) "#4ADE80" else "#EF4444"
-                    mainHandler.post { updateBadge(label, false, color) }
+                    try {
+                        val ok = modelManager.loadModel(file, useGpu)
+                        currentModelFilename = if (ok) savedModel else null
+                        val label = if (ok) "MODEL READY" else "MODEL ERR"
+                        val color = if (ok) "#4ADE80" else "#EF4444"
+                        mainHandler.post { updateBadge(label, false, color) }
+                    } catch (t: Throwable) {
+                        Log.e(TAG, "Startup model load failed", t)
+                        CrashHandler.getDefault()?.uncaughtException(Thread.currentThread(), t)
+                    }
                 }
             }
         }
@@ -380,13 +407,35 @@ class MainActivity : AppCompatActivity() {
         onDone: (results: List<ModelManager.DetectionResult>, latencyMs: Long) -> Unit
     ) {
         analysisExecutor.execute {
-            val startTime = System.currentTimeMillis()
-            val results = modelManager.runInference(
-                bitmap,
-                classLabels = if (labelList.isEmpty()) null else labelList.toList()
-            )
-            val latency = System.currentTimeMillis() - startTime
-            mainHandler.post { onDone(results, latency) }
+            try {
+                val startTime = System.currentTimeMillis()
+                val results = modelManager.runInference(
+                    bitmap,
+                    classLabels = if (labelList.isEmpty()) null else labelList.toList()
+                )
+                val latency = System.currentTimeMillis() - startTime
+                mainHandler.post { onDone(results, latency) }
+            } catch (t: Throwable) {
+                // This lambda runs on the analysis thread, where an uncaught
+                // throwable kills the process with no explanation at all —
+                // that was the silent crash. Route it to the error screen.
+                Log.e(TAG, "Inference failed on the analysis thread", t)
+                CrashHandler.getDefault()?.uncaughtException(Thread.currentThread(), t)
+            }
+        }
+    }
+
+    /**
+     * Explains a model-loading failure in full, instead of leaving the user
+     * with a three-word badge they cannot act on.
+     */
+    private fun showModelError(reason: String) {
+        runOnUiThread {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Could not load model")
+                .setMessage(reason)
+                .setPositiveButton("OK", null)
+                .show()
         }
     }
 
@@ -486,7 +535,14 @@ class MainActivity : AppCompatActivity() {
             updateBadge("HARDWARE: $mode", false, "#135bec")
             currentModelFilename?.let {
                 val file = File(filesDir, it)
-                if (file.exists()) analysisExecutor.execute { modelManager.loadModel(file, useGpu) }
+                if (file.exists()) analysisExecutor.execute {
+                    try {
+                        modelManager.loadModel(file, useGpu)
+                    } catch (t: Throwable) {
+                        Log.e(TAG, "Model reload failed", t)
+                        CrashHandler.getDefault()?.uncaughtException(Thread.currentThread(), t)
+                    }
+                }
             }
         }
 
