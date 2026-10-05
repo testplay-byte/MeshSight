@@ -293,7 +293,15 @@ class MainActivity : AppCompatActivity() {
             val file = File(filesDir, name)
             if (file.exists()) labelList.addAll(readLabelsFile(file))
         }
-        prefs.getString(PREF_MODEL_FILENAME, null)?.let { savedModel ->
+        // Do NOT auto-load the previous model if we crashed last time: that is
+        // exactly the loop the user hit — crash, restart, auto-load the same
+        // model, crash again, forever. Require a deliberate re-pick instead.
+        val recoveredFromCrash = CrashHandler.getLastCrash(this) != null
+        if (recoveredFromCrash) {
+            Log.w(TAG, "Recovering from a crash — not auto-loading the last model")
+            updateBadge("RECOVERED — PICK A MODEL", false, "#F59E0B")
+        }
+        if (!recoveredFromCrash) prefs.getString(PREF_MODEL_FILENAME, null)?.let { savedModel ->
             val file = File(filesDir, savedModel)
             if (file.exists()) {
                 analysisExecutor.execute {
@@ -414,6 +422,15 @@ class MainActivity : AppCompatActivity() {
                     classLabels = if (labelList.isEmpty()) null else labelList.toList()
                 )
                 val latency = System.currentTimeMillis() - startTime
+                // runInference reports an unusable model through lastError
+                // instead of throwing. Show it once, not on every frame.
+                val failure = modelManager.lastError
+                if (failure != null) {
+                    modelManager.clearLastError()
+                    updateBadge("MODEL UNUSABLE", false, "#EF4444")
+                    showModelError(failure)
+                    return@execute
+                }
                 mainHandler.post { onDone(results, latency) }
             } catch (t: Throwable) {
                 // This lambda runs on the analysis thread, where an uncaught

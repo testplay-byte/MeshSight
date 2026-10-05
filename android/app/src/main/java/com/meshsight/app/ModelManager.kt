@@ -76,6 +76,16 @@ class ModelManager {
     var inputWidth: Int = 640
         private set
 
+    /**
+     * Channels of the image input. 3 for every RGB YOLO model, but read from
+     * the tensor rather than assumed, because the buffer is sized from it.
+     */
+    var inputChannels: Int = 3
+        private set
+
+    /** Which input tensor is the image (a model may have more than one). */
+    private var imageInputIndex: Int = 0
+
     /** True once a model is loaded and [runInference] can be called. */
     val isReady: Boolean get() = interpreter != null
 
@@ -85,6 +95,11 @@ class ModelManager {
      */
     var lastError: String? = null
         private set
+
+    /** Called once the UI has shown [lastError], so it is not repeated. */
+    fun clearLastError() {
+        lastError = null
+    }
 
     /**
      * Reads the TFLite magic number. Every flatbuffer model starts with a
@@ -156,15 +171,42 @@ class ModelManager {
                 }
             }
 
-            interpreter = Interpreter(modelFile, options)
+interpreter = Interpreter(modelFile, options)
 
-            // Auto-detect native resolution: input shape is [1, H, W, 3] (NHWC)
-            val inputShape = interpreter!!.getInputTensor(0).shape()
-            if (inputShape.size == 4) {
-                inputHeight = inputShape[1]
-                inputWidth = inputShape[2]
+            // Find the image input and read its real geometry.
+            //
+            // This must not assume tensor 0 is the image, nor that the shape is
+            // static: a dynamic-shape export reports -1 for H/W, and the input
+            // buffer is sized from these numbers. Getting it wrong produces
+            // "Cannot copy to a TensorFlowLite tensor with N bytes from a Java
+            // Buffer with M bytes" on every single frame.
+            imageInputIndex = 0
+            for (i in 0 until interpreter!!.inputTensorCount) {
+                if (interpreter!!.getInputTensor(i).shape().size == 4) {
+                    imageInputIndex = i
+                    break
+                }
             }
-            Log.i(TAG, "Model loaded. Input resolution: ${inputWidth}x${inputHeight}")
+            val shape = interpreter!!.getInputTensor(imageInputIndex).shape()
+
+            fun dim(i: Int, fallback: Int): Int =
+                if (i < shape.size && shape[i] > 0) shape[i] else fallback
+
+            // NHWC for image inputs: [batch, H, W, C]
+            inputHeight = dim(1, 640)
+            inputWidth = dim(2, 640)
+            inputChannels = dim(3, 3)
+            if (shape.any { it <= 0 }) {
+                Log.w(
+                    TAG,
+                    "Model has a dynamic input shape $shape — assuming " +
+                        "${inputWidth}x${inputHeight}x$inputChannels",
+                )
+            }
+            Log.i(
+                TAG,
+                "Input tensor #$imageInputIndex: ${inputWidth}x${inputHeight}x$inputChannels",
+            )
             true
         } catch (t: Throwable) {
             // Throwable, not Exception: a malformed flatbuffer can surface as
@@ -204,6 +246,24 @@ class ModelManager {
 
         // 2. Preprocess into the float buffer the model expects
         val inputBuffer = processBitmapLetterbox(bitmap, newW, newH)
+
+        // 2b. Guard the hand-off to native code.
+        //
+        // TFLite throws IllegalArgumentException from inside the interpreter if
+        // the buffer's byte length differs from the input tensor's, and that
+        // error used to kill the app on every frame. Checking here turns a hard
+        // crash into a single clear failure the UI can explain.
+        val tensorShape = interp.getInputTensor(imageInputIndex).shape()
+        val expectedFloats = tensorShape.fold(1) { acc, d -> acc * (if (d > 0) d else 1) }
+        val dynamicDims = tensorShape.any { it <= 0 }
+        val ourFloats = inputHeight * inputWidth * inputChannels
+        if (expectedFloats != ourFloats && !dynamicDims) {
+            lastError = "Model input is ${tensorShape.joinToString("x")} " +
+                "($expectedFloats values) but the app prepared $ourFloats. " +
+                "This model is not compatible with MeshSight yet."
+            Log.e(TAG, "Input size mismatch: tensor=$expectedFloats ours=$ourFloats shape=$tensorShape")
+            return emptyList()
+        }
 
         // 3. Locate output tensors: 3-D = boxes tensor, 4-D = mask prototypes
         var boxOutputIndex = -1
@@ -257,7 +317,7 @@ class ModelManager {
      * (letterbox), then streams normalized RGB floats (0..1) into NHWC order.
      */
     private fun processBitmapLetterbox(bitmap: Bitmap, newW: Int, newH: Int): ByteBuffer {
-        val buffer = allocateFloatBuffer(inputHeight * inputWidth * 3)
+        val buffer = allocateFloatBuffer(inputHeight * inputWidth * inputChannels)
 
         val scaled = Bitmap.createScaledBitmap(bitmap, newW, newH, true)
         val canvasBitmap = Bitmap.createBitmap(inputWidth, inputHeight, Bitmap.Config.ARGB_8888)

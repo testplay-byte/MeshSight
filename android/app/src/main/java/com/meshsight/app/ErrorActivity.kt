@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -30,14 +29,14 @@ class ErrorActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.tvErrorReport).text = report
 
-        findViewById<Button>(R.id.btnCopy).setOnClickListener {
+        findViewById<TextView>(R.id.btnCopy).setOnClickListener {
             val clipboard =
                 getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboard.setPrimaryClip(ClipData.newPlainText("MeshSight crash report", report))
             Toast.makeText(this, "Report copied to clipboard", Toast.LENGTH_SHORT).show()
         }
 
-        findViewById<Button>(R.id.btnRestart).setOnClickListener {
+        findViewById<TextView>(R.id.btnRestart).setOnClickListener {
             CrashHandler.clearLastCrash(this)
             startActivity(
                 Intent(this, MainActivity::class.java).apply {
@@ -47,7 +46,7 @@ class ErrorActivity : AppCompatActivity() {
             finish()
         }
 
-        findViewById<Button>(R.id.btnClose).setOnClickListener {
+        findViewById<TextView>(R.id.btnClose).setOnClickListener {
             CrashHandler.clearLastCrash(this)
             finishAffinity()
         }
