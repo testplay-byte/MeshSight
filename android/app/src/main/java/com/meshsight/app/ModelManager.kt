@@ -3,7 +3,9 @@ package com.meshsight.app
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.util.Log
+import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.Tensor
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -85,8 +87,8 @@ class ModelManager {
     /** Which input tensor is the image (a model may have more than one). */
     private var imageInputIndex: Int = 0
 
-    /** Element type of the image input tensor: FLOAT32, FLOAT16, INT8, UINT8. */
-    private var inputDtype: Int = org.tensorflow.lite.DataType.FLOAT32
+    /** Element type of the image input tensor, read from the model. */
+    private var inputDtype: DataType = DataType.FLOAT32
 
     /** True once a model is loaded and [runInference] can be called. */
     val isReady: Boolean get() = interpreter != null
@@ -294,7 +296,7 @@ interpreter = Interpreter(modelFile, options)
 
         var protoBuffer: ByteBuffer? = null
         var protoShape: IntArray? = null
-        var protoDtype = org.tensorflow.lite.DataType.FLOAT32
+        var protoDtype: DataType = DataType.FLOAT32
         if (maskOutputIndex != -1) {
             val t = interp.getOutputTensor(maskOutputIndex)
             protoShape = t.shape()
@@ -328,31 +330,40 @@ interpreter = Interpreter(modelFile, options)
      * [tensor]. TFLite rejects a buffer whose element type does not match the
      * tensor's, which is how float16 and int8 models used to fail outright.
      */
-    private fun allocateFor(tensor: org.tensorflow.lite.Tensor, count: Int): ByteBuffer =
+    private fun allocateFor(tensor: Tensor, count: Int): ByteBuffer =
         ByteBuffer.allocateDirect(count * bytesPerElement(tensor.dataType())).apply {
             order(ByteOrder.nativeOrder())
         }
 
-    private fun bytesPerElement(dtype: Int): Int = when (dtype) {
-        org.tensorflow.lite.DataType.FLOAT32 -> 4
-        org.tensorflow.lite.DataType.FLOAT16 -> 2
-        org.tensorflow.lite.DataType.INT8, org.tensorflow.lite.DataType.UINT8 -> 1
-        org.tensorflow.lite.DataType.INT32, org.tensorflow.lite.DataType.UINT32 -> 4
-        else -> 4
+    /**
+     * FLOAT16 is absent from older org.tensorflow.lite.DataType, so resolve it
+     * by name when the runtime provides it and treat it as float32 otherwise.
+     */
+    private val FLOAT16: DataType? by lazy {
+        DataType.values().firstOrNull { it.name == "FLOAT16" }
+    }
+
+    private fun bytesPerElement(dtype: DataType): Int = when (dtype) {
+        DataType.FLOAT32 -> 4
+        DataType.UINT8, DataType.INT8, DataType.BOOL -> 1
+        DataType.INT64 -> 8
+        else -> if (dtype == FLOAT16) 2 else 4
     }
 
     /** Reads [count] values out of [buffer] as floats, whatever the dtype. */
-    private fun readAsFloats(buffer: ByteBuffer, dtype: Int, count: Int): FloatArray {
+    private fun readAsFloats(buffer: ByteBuffer, dtype: DataType, count: Int): FloatArray {
         val out = FloatArray(count)
-        when (dtype) {
-            org.tensorflow.lite.DataType.FLOAT16 -> {
+        when {
+            dtype == FLOAT16 && FLOAT16 != null ->
                 for (i in 0 until count) out[i] = float16ToFloat(buffer.getShort(i * 2))
-            }
-            org.tensorflow.lite.DataType.INT8 -> for (i in 0 until count) out[i] = buffer.get(i).toFloat()
-            org.tensorflow.lite.DataType.UINT8 -> for (i in 0 until count) out[i] = (buffer.get(i).toInt() and 0xFF).toFloat()
-            org.tensorflow.lite.DataType.INT32 -> for (i in 0 until count) out[i] = buffer.getInt(i * 4).toFloat()
-            org.tensorflow.lite.DataType.UINT32 -> for (i in 0 until count) out[i] = (buffer.getInt(i * 4).toLong() and 0xFFFFFFFFL).toFloat()
-            else -> for (i in 0 until count) out[i] = buffer.getFloat(i * 4)
+            dtype == DataType.INT8 ->
+                for (i in 0 until count) out[i] = buffer.get(i).toFloat()
+            dtype == DataType.UINT8 ->
+                for (i in 0 until count) out[i] = (buffer.get(i).toInt() and 0xFF).toFloat()
+            dtype == DataType.INT64 ->
+                for (i in 0 until count) out[i] = buffer.getLong(i * 8).toFloat()
+            else ->
+                for (i in 0 until count) out[i] = buffer.getFloat(i * 4)
         }
         return out
     }
@@ -431,19 +442,19 @@ interpreter = Interpreter(modelFile, options)
             val r = ((pixel shr 16) and 0xFF) / 255.0f
             val g = ((pixel shr 8) and 0xFF) / 255.0f
             val b = (pixel and 0xFF) / 255.0f
-            when (inputDtype) {
-                org.tensorflow.lite.DataType.FLOAT16 -> {
+            when {
+                inputDtype == FLOAT16 && FLOAT16 != null -> {
                     buffer.putShort(floatToFloat16(r))
                     buffer.putShort(floatToFloat16(g))
                     buffer.putShort(floatToFloat16(b))
                 }
-                org.tensorflow.lite.DataType.INT8 -> {
+                inputDtype == DataType.INT8 -> {
                     // Quantised input: 0..255 maps onto -128..127
                     buffer.put(((r * 255).toInt() - 128).coerceIn(-128, 127).toByte())
                     buffer.put(((g * 255).toInt() - 128).coerceIn(-128, 127).toByte())
                     buffer.put(((b * 255).toInt() - 128).coerceIn(-128, 127).toByte())
                 }
-                org.tensorflow.lite.DataType.UINT8 -> {
+                inputDtype == DataType.UINT8 -> {
                     buffer.put((r * 255).toInt().coerceIn(0, 255).toByte())
                     buffer.put((g * 255).toInt().coerceIn(0, 255).toByte())
                     buffer.put((b * 255).toInt().coerceIn(0, 255).toByte())
@@ -484,7 +495,7 @@ interpreter = Interpreter(modelFile, options)
         output: ByteBuffer,
         shape: IntArray,
         classLabels: List<String>?,
-        dtype: Int,
+        dtype: DataType,
         isSegmenter: Boolean
     ): List<DetectionResult> {
         if (shape.size < 3) return emptyList()
@@ -612,7 +623,7 @@ interpreter = Interpreter(modelFile, options)
     private fun buildMasks(
         protoBuffer: ByteBuffer,
         protoShape: IntArray,
-        protoDtype: Int,
+        protoDtype: DataType,
         detections: List<DetectionResult>
     ) {
         // NHWC ([1, H, W, 32]) vs NCHW ([1, 32, H, W]) prototypes
